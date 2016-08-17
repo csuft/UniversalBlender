@@ -21,6 +21,18 @@
     <ClCompile Include="utils\timer.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="base\BaseBlender.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="cpu\CPUBlender.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="cuda\CUDABlender.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="opencl\OpenCLBlender.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="utils\log.h">
@@ -30,6 +42,18 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="utils\UnrollMap.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="base\BaseBlender.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="cpu\CPUBlender.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="cuda\CUDABlender.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="opencl\OpenCLBlender.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>

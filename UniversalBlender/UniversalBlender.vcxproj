@@ -124,10 +124,18 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="base\BaseBlender.cpp" />
+    <ClCompile Include="cpu\CPUBlender.cpp" />
+    <ClCompile Include="cuda\CUDABlender.cpp" />
+    <ClCompile Include="opencl\OpenCLBlender.cpp" />
     <ClCompile Include="utils\log.cpp" />
     <ClCompile Include="utils\timer.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="base\BaseBlender.h" />
+    <ClInclude Include="cpu\CPUBlender.h" />
+    <ClInclude Include="cuda\CUDABlender.h" />
+    <ClInclude Include="opencl\OpenCLBlender.h" />
     <ClInclude Include="utils\log.h" />
     <ClInclude Include="utils\timer.h" />
     <ClInclude Include="utils\UnrollMap.h" />
