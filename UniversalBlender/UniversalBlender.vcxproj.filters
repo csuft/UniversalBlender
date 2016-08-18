@@ -33,6 +33,9 @@
     <ClCompile Include="opencl\OpenCLBlender.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="wrapper\BlenderWrapper.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="utils\log.h">
@@ -56,6 +59,9 @@
     <ClInclude Include="opencl\OpenCLBlender.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="wrapper\BlenderWrapper.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Library Include="lib\win\UnrollMap32.lib" />
@@ -68,5 +74,7 @@
     <None Include="bin\win\UnrollMap64.dll" />
     <None Include="bin\win\UnrollMapd32.dll" />
     <None Include="bin\win\UnrollMapd64.dll" />
+    <None Include="cuda\blender_kernels.cu" />
+    <None Include="opencl\blender_kernels.cl" />
   </ItemGroup>
 </Project>

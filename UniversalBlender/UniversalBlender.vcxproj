@@ -125,6 +125,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="base\BaseBlender.cpp" />
+    <ClCompile Include="wrapper\BlenderWrapper.cpp" />
     <ClCompile Include="cpu\CPUBlender.cpp" />
     <ClCompile Include="cuda\CUDABlender.cpp" />
     <ClCompile Include="opencl\OpenCLBlender.cpp" />
@@ -133,6 +134,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="base\BaseBlender.h" />
+    <ClInclude Include="wrapper\BlenderWrapper.h" />
     <ClInclude Include="cpu\CPUBlender.h" />
     <ClInclude Include="cuda\CUDABlender.h" />
     <ClInclude Include="opencl\OpenCLBlender.h" />
@@ -151,6 +153,8 @@
     <None Include="bin\win\UnrollMap64.dll" />
     <None Include="bin\win\UnrollMapd32.dll" />
     <None Include="bin\win\UnrollMapd64.dll" />
+    <None Include="cuda\blender_kernels.cu" />
+    <None Include="opencl\blender_kernels.cl" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
