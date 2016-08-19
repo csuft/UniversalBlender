@@ -1,10 +1,11 @@
 #include "BlenderWrapper.h"
 
-#include <vector>
-
 #include "../base/BaseBlender.h"
 #include "../utils/log.h"
 #include "../utils/timer.h"
+#include "../cuda/CUDABlender.h"
+#include "../opencl/OpenCLBlender.h"
+#include "../cpu/CPUBlender.h"
 
 #include <cuda_runtime.h>
 #include <cuda_runtime_api.h>
@@ -16,27 +17,43 @@
 #else 
 #include <CL/cl.hpp>
 #include <CL/cl_gl.h>
-#endif
+#endif 
 
-#define check_CUDA_status(ret) \
-if (ret != cudaSuccess) {\
-	LOGERR("current thread id = %d, CUDA ERR:%s, error code = %d", m_profileTimer.PthreadSelf(), cudaGetErrorString(ret), ret); return ret; \
-}
-
-CBlenderWrapper::CBlenderWrapper() : m_blender(nullptr), m_deviceType(CPU)
+CBlenderWrapper::CBlenderWrapper() : m_blender(nullptr), m_deviceType(CPU_BLENDER), m_offset(""), m_width(0), m_height(0)
 {
 }
 
 
 CBlenderWrapper::~CBlenderWrapper()
 {
+	CBaseBlender* temp = m_blender.load(std::memory_order_relaxed);
+	if (temp != nullptr)
+	{
+		delete temp;
+		temp = nullptr;
+	}
 }
 
 void CBlenderWrapper::capabilityAssessment()
 {
-
+	if (isSupportCUDA())
+	{
+		m_deviceType = CUDA_BLENDER;
+		LOGINFO("CUDA compute technology is available in this platform!");
+	}
+	else if (isSupportOpenCL())
+	{
+		m_deviceType = OPENCL_BLENDER;
+		LOGINFO("OpenCL compute technology is available in this platform!");
+	}
+	else
+	{
+		m_deviceType = CPU_BLENDER;
+		LOGINFO("Only CPU is available in this platform!");
+	}
 }
 
+// Determine whether the platform support CUDA.
 bool CBlenderWrapper::isSupportCUDA()
 {
 	cudaError_t retVal = cudaSuccess;
@@ -99,6 +116,7 @@ bool CBlenderWrapper::isSupportCUDA()
 	return true;
 }
 
+// Determine whether the platform support OpenCL
 bool CBlenderWrapper::isSupportOpenCL()
 {
 	cl_int err;
@@ -126,23 +144,92 @@ bool CBlenderWrapper::isSupportOpenCL()
 	return true;
 }
 
+// Implement singleton pattern using C++11 low level ordering constraints.
 CBaseBlender* CBlenderWrapper::getSingleInstance()
 {
-
+	CBaseBlender* temp = m_blender.load(std::memory_order_acquire);
+	if (temp == nullptr)
+	{
+		std::lock_guard<std::mutex> lock(m_mutex);
+		temp = m_blender.load(std::memory_order_relaxed);
+		if (temp == nullptr)
+		{
+			if (CUDA_BLENDER == m_deviceType)
+			{
+				temp = new CCUDABlender;
+			}
+			else if (OPENCL_BLENDER == m_deviceType)
+			{
+				temp = new COpenCLBlender;
+			}
+			else
+			{
+				temp = new CCPUBlender;
+			}
+			m_blender.store(temp, std::memory_order_release);
+		}
+	}
+	return temp;
 }
 
-void CBlenderWrapper::runImageBlender(unsigned int input_width, unsigned int input_height, unsigned int output_width, unsigned int output_height)
+// 该接口封装CPU/OPENCL/CUDA进行图像拼接渲染
+void CBlenderWrapper::runImageBlender(BlenderParams& params, BLENDER_TYPE type)
 {
-
+	if (checkParameters(params))
+	{
+		CBaseBlender* blender = m_blender.load(std::memory_order_relaxed);
+		blender->setParams(params.input_width, params.input_height, params.output_width, params.output_height, params.offset);
+		switch (type)
+		{
+		case CBlenderWrapper::PANORAMIC_BLENDER:
+			blender->runBlender(params.input_data, params.output_data, PANORAMIC_BLENDER);
+			break;
+		case CBlenderWrapper::THREEDIMENSION_BLENDER:
+			blender->runBlender(params.input_data, params.output_data, THREEDIMENSION_BLENDER);
+			break;
+		case CBlenderWrapper::PANORAMIC_CENTER_BLENDER:
+			blender->runBlender(params.input_data, params.output_data, PANORAMIC_CENTER_BLENDER);
+			break;
+		default:
+			break;
+		}
+	}
+	
 }
 
-void CBlenderWrapper::ReleaseResources()
+bool CBlenderWrapper::checkParameters(BlenderParams& params)
 {
+	if (params.input_width <= 0 || params.input_height <= 0 || params.input_data == nullptr)
+	{
+		LOGERR("Invalid input parameters, please check again carefully!");
+		return false;
+	}
 
-}
+	if (params.output_width <= 0 || params.output_height <= 0 || params.output_data == nullptr)
+	{
+		LOGERR("Invalid output parameters, please check again carefully!");
+		return false;
+	}
 
-bool CBlenderWrapper::resetParameters(unsigned int width, unsigned int height, std::string offset)
-{
+	if (params.offset.empty())
+	{
+		LOGERR("Offset is empty, please check again carefully!");
+		return false;
+	}
+	/*if (!isOffsetValid(params.offset))
+	{
+	LOGERR("Invalid offset format, please check again carefully!");
+	return false;
+	}*/
 
+	// 输入参数发生改变，说明视频数据发生变化，需要使用新的参数进行渲染拼接
+	if (m_width != params.input_width || m_height != params.input_height || m_offset.compare(params.offset))
+	{
+		m_width = params.input_width;
+		m_height = params.input_height;
+		m_offset = params.offset;
+	}
+
+	return true;
 }
 
