@@ -36,6 +36,9 @@
     <ClCompile Include="wrapper\BlenderWrapper.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="utils\base64.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="utils\log.h">
@@ -60,6 +63,9 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="wrapper\BlenderWrapper.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="utils\base64.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>

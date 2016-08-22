@@ -19,7 +19,7 @@
 #include <CL/cl_gl.h>
 #endif 
 
-CBlenderWrapper::CBlenderWrapper() : m_blender(nullptr), m_deviceType(CPU_BLENDER), m_offset(""), m_width(0), m_height(0)
+CBlenderWrapper::CBlenderWrapper() : m_blender(nullptr), m_deviceType(CPU_BLENDER), m_offset("")
 {
 }
 
@@ -215,19 +215,6 @@ bool CBlenderWrapper::checkParameters(BlenderParams& params)
 	{
 		LOGERR("Offset is empty, please check again carefully!");
 		return false;
-	}
-	/*if (!isOffsetValid(params.offset))
-	{
-	LOGERR("Invalid offset format, please check again carefully!");
-	return false;
-	}*/
-
-	// 输入参数发生改变，说明视频数据发生变化，需要使用新的参数进行渲染拼接
-	if (m_width != params.input_width || m_height != params.input_height || m_offset.compare(params.offset))
-	{
-		m_width = params.input_width;
-		m_height = params.input_height;
-		m_offset = params.offset;
 	}
 
 	return true;

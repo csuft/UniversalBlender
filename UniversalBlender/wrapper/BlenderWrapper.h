@@ -48,8 +48,6 @@ private:
 
 private: 
 	std::string m_offset;
-	unsigned int m_width;
-	unsigned int m_height; 
 	BLENDER_DEVICE_TYPE m_deviceType;
 	Timer m_profileTimer;
 	std::mutex m_mutex;

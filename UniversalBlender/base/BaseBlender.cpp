@@ -1,13 +1,11 @@
 #include "BaseBlender.h"
 
 #include "../utils/base64.h"
-
-#include <vector>
 #include <regex>
 
-CBaseBlender::CBaseBlender()
+CBaseBlender::CBaseBlender() : m_channels(0), m_blendWidth(0), m_leftMapData(nullptr), m_rightMapData(nullptr), m_unrollMap(nullptr),
+								m_inputHeight(0), m_inputWidth(0), m_outputWidth(0), m_outputHeight(0), m_paramsChanged(false)
 {
-	// leave alone 
 }
 
 
@@ -78,6 +76,8 @@ void CBaseBlender::splitOffset(std::string& s, char delim, std::vector< std::str
 */
 bool CBaseBlender::isOffsetValid(std::string& _offset)
 {
+	// to be fix
+	//////////////////////////////////////////////////////////////////////////
 	std::string temp;
 	char* decoded_offset = nullptr;
 	// 如还未进行Base64解码，则先解码
@@ -93,6 +93,7 @@ bool CBaseBlender::isOffsetValid(std::string& _offset)
 	{
 		temp = _offset;
 	}
+	//////////////////////////////////////////////////////////////////////////
 	_offset = trimOffset(temp);
 	LOGINFO("Trimmed offset: %s", _offset.c_str());
 	std::vector<std::string> result;
