@@ -34,27 +34,6 @@ unsigned char* CCPUBlender::removeAlphaChannel(const unsigned char* inputImage)
 	// To do lately...
 }
 
-// 构建Blender对象，如果底层渲染参数发生变化，那么以新的参数配置Blender对象
-void CCPUBlender::setupBlender()
-{
-	if (m_paramsChanged)
-	{
-		if (m_unrollMap != nullptr)
-		{
-			delete m_unrollMap;
-			m_unrollMap = nullptr;
-			m_leftMapData = nullptr;
-			m_rightMapData = nullptr;
-		}
-		m_unrollMap = new UnrollMap;
-		m_unrollMap->setOffset(m_offset);
-		m_unrollMap->init(m_inputWidth, m_inputHeight, m_outputWidth, m_outputHeight, m_blenderType);
-		m_leftMapData = m_unrollMap->getMapLeft();
-		m_rightMapData = m_unrollMap->getMapRight();
-		m_paramsChanged = false;
-	} 
-}
-
 void CCPUBlender::runBlender(unsigned char* input_data, unsigned char* output_data)
 {
 	if (m_blenderType == 1)
@@ -365,32 +344,4 @@ void CCPUBlender::destroyBlender()
 		delete m_unrollMap;
 		m_unrollMap = nullptr;
 	}
-}
-
-bool CCPUBlender::setParams(const unsigned int iw, const unsigned int ih, const unsigned int ow, const unsigned oh, std::string offset, int type)
-{
-	if (iw <= 0 || ih <= 0 || ow <= 0 || oh <= 0)
-	{
-		LOGERR("Invalid resolution parameters, please check again carefully!");
-		return false;
-	}
-
-	if (!isOffsetValid(offset))
-	{
-		LOGERR("Invalid offset format, please check again carefully!");
-		return false;
-	}
-
-	if (iw != m_inputWidth || ih != m_inputHeight || ow != m_outputWidth || oh != m_outputHeight || m_offset.compare(offset))
-	{
-		m_inputWidth = iw;
-		m_inputHeight = ih;
-		m_outputWidth = ow;
-		m_outputHeight = oh;
-		m_offset = offset;
-		// To indicate the parameters have changed.
-		m_paramsChanged = true;
-	}
-	 
-	return true;
 }

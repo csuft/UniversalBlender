@@ -14,6 +14,54 @@ CBaseBlender::~CBaseBlender()
 	// leave alone
 }
 
+void CBaseBlender::setupBlender()
+{
+	if (m_paramsChanged)
+	{
+		if (m_unrollMap != nullptr)
+		{
+			delete m_unrollMap;
+			m_unrollMap = nullptr;
+			m_leftMapData = nullptr;
+			m_rightMapData = nullptr;
+		}
+		m_unrollMap = new UnrollMap;
+		m_unrollMap->setOffset(m_offset);
+		m_unrollMap->init(m_inputWidth, m_inputHeight, m_outputWidth, m_outputHeight, m_blenderType);
+		m_leftMapData = m_unrollMap->getMapLeft();
+		m_rightMapData = m_unrollMap->getMapRight();
+		m_paramsChanged = false;
+	}
+}
+
+bool CBaseBlender::setParams(const unsigned int iw, const unsigned int ih, const unsigned int ow, const unsigned oh, std::string offset, int type)
+{
+	if (iw <= 0 || ih <= 0 || ow <= 0 || oh <= 0)
+	{
+		LOGERR("Invalid resolution parameters, please check again carefully!");
+		return false;
+	}
+
+	if (!isOffsetValid(offset))
+	{
+		LOGERR("Invalid offset format, please check again carefully!");
+		return false;
+	}
+
+	if (iw != m_inputWidth || ih != m_inputHeight || ow != m_outputWidth || oh != m_outputHeight || m_offset.compare(offset))
+	{
+		m_inputWidth = iw;
+		m_inputHeight = ih;
+		m_outputWidth = ow;
+		m_outputHeight = oh;
+		m_offset = offset;
+		// To indicate the parameters have changed.
+		m_paramsChanged = true;
+	}
+
+	return true;
+}
+
 /**
 * Offset判断offset是否已经经过Base64解码
 * Base64编码方案最好的讲解：http://www.cnblogs.com/chengxiaohui/articles/3951129.html

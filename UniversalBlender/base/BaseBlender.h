@@ -12,10 +12,10 @@ public:
 	explicit CBaseBlender();
 	virtual ~CBaseBlender();
 
-	virtual void setupBlender() = 0;
+	virtual void setupBlender();
 	virtual void runBlender(unsigned char* input_data, unsigned char* output_data) = 0;
 	virtual void destroyBlender() = 0;
-	virtual bool setParams(const unsigned int iw, const unsigned int ih, const unsigned int ow, const unsigned oh, std::string offset, int type) = 0;
+	virtual bool setParams(const unsigned int iw, const unsigned int ih, const unsigned int ow, const unsigned oh, std::string offset, int type);
 
 protected:
 	bool isBase64Decoded(std::string offset);
