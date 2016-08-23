@@ -2,24 +2,24 @@
 #include <cuda.h>
 #include <cuda_runtime_api.h>
 #include <cuda_texture_types.h>
+#include <device_launch_parameters.h>
 #include <algorithm>
-#include <cmath>
-#include <iostream>
+#include <cmath> 
 #include <vector>
 #include <chrono>
 #include <memory>
-#include <fstream>
-#include <chrono>
-#include <time.h> 
-#include <iostream> 
+#include <fstream> 
+#include <time.h>  
 #include "../utils/log.h"
 
-#define Check_CU(ret) \
-if (ret != cudaSuccess) {\
-	LOGERR("cuda err:%s ,file:%s,line:%d ...", cudaGetErrorString(ret), __FILE__, __LINE__); return ret; \
+cudaError_t checkError(cudaError_t ret) {
+	if (ret != cudaSuccess) {
+		LOGERR("cuda err:%s ,file:%s,line:%d ...", cudaGetErrorString(ret), __FILE__, __LINE__);
+		return ret;
+	}
 }
 
-texture <uchar4, cudaTextureType2D, cudaReadModeNormalizedFloat>  tex;
+texture<uchar4, cudaTextureType2D, cudaReadModeNormalizedFloat> tex;
 
 //kernel function
 __global__ void mapFinishToBlender(int blend_width, int image_width, float *left_map, float *right_map, float *alpha_table, unsigned char *out_img)
@@ -111,7 +111,7 @@ extern "C" cudaError_t cuFinishToBlender(cudaArray *inputBuffer, float *left_map
 	tex.addressMode[1] = cudaAddressModeClamp;
 	tex.normalized = false;
 	tex.filterMode = cudaFilterModeLinear;
-	Check_CU(cudaBindTextureToArray(tex, inputBuffer));
+	checkError(cudaBindTextureToArray(tex, inputBuffer, nullptr));
 	mapFinishToBlender <<<numBlock, thread >>>(bd_width, image_width, left_map, right_map, alpha_table, uOutBuffer);
 
 	return ret;
@@ -122,7 +122,6 @@ extern "C" cudaError_t cuFinishToBlender(cudaArray *inputBuffer, float *left_map
 __global__ void add_alpha_channel(unsigned char* input, unsigned char* output)
 {
 
-	return;
 }
 
 // Convert RGBA(BGRA) to RGB(BGR)

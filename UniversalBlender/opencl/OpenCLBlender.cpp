@@ -5,6 +5,7 @@ COpenCLBlender::COpenCLBlender() : m_inputImageSize(0), m_outputImageSize(0), m_
 {
 	memset(m_origins, 0, sizeof(int)* 3);
 	memset(m_inputParams, 0, sizeof(int)* 16);
+	m_unrollMap = new UnrollMap;
 }
 
 
@@ -50,6 +51,12 @@ void COpenCLBlender::destroyBlender()
 	{
 		delete[]m_outputBuffer;
 		m_outputBuffer = nullptr;
+	}
+
+	if (nullptr != m_unrollMap)
+	{
+		delete m_unrollMap;
+		m_unrollMap = nullptr;
 	}
 } 
 
@@ -188,7 +195,7 @@ void COpenCLBlender::initializeDevice()
 	m_commandQueue = queue;
 }
 
-inline bool checkError(cl_int err, const char* name)
+inline bool COpenCLBlender::checkError(cl_int err, const char* name)
 {
 	if (err != CL_SUCCESS)
 	{

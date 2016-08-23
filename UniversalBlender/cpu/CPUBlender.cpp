@@ -22,11 +22,13 @@ CCPUBlender::~CCPUBlender()
 unsigned char* CCPUBlender::addAlphaChannel(const unsigned char* inputImage)
 {
 	// To do lately...
+	return nullptr;
 }
 
 unsigned char* CCPUBlender::removeAlphaChannel(const unsigned char* inputImage)
 {
 	// To do lately...
+	return nullptr;
 }
 
 void CCPUBlender::runBlender(unsigned char* input_data, unsigned char* output_data)

@@ -80,7 +80,9 @@
     <None Include="bin\win\UnrollMap64.dll" />
     <None Include="bin\win\UnrollMapd32.dll" />
     <None Include="bin\win\UnrollMapd64.dll" />
-    <None Include="cuda\blender_kernels.cu" />
     <None Include="opencl\blender_kernels.cl" />
+  </ItemGroup>
+  <ItemGroup>
+    <CudaCompile Include="cuda\blender_kernels.cu" />
   </ItemGroup>
 </Project>

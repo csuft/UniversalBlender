@@ -1,17 +1,11 @@
 #include "CUDABlender.h"
 
-#include <cuda_runtime.h>
-#include <cuda_runtime_api.h>
-#include <cuda.h>
-#include <cuda_texture_types.h>
-#include <vector>
-
 extern "C" cudaError_t cuFinishToBlender(cudaArray *inputBuffer, float *left_map, float*right_map, float* alpha_table, int image_width, int image_height, int bd_width, dim3 thread, dim3 numBlock, unsigned char *uOutBuffer);
 
 CCUDABlender::CCUDABlender() : m_inputImageSize(0), m_outputImageSize(0), m_cudaInputBuffer(nullptr), m_cudaOutputBuffer(nullptr),
 								m_cudaAlphaTable(nullptr), m_cudaArray(nullptr), m_cudaLeftMapData(nullptr), m_cudaRightMapData(nullptr)
 {
-
+	m_unrollMap = new UnrollMap;
 }
 
 
@@ -144,6 +138,12 @@ void CCUDABlender::destroyBlender()
 		cudaFreeArray(m_cudaArray);
 		m_cudaArray = nullptr;
 	}
+
+	if (nullptr != m_unrollMap)
+	{
+		delete m_unrollMap;
+		m_unrollMap = nullptr;
+	}
 }
 
 bool CCUDABlender::setParams(const unsigned int iw, const unsigned int ih, const unsigned int ow, const unsigned oh, std::string offset, int type)
@@ -232,6 +232,7 @@ bool CCUDABlender::initializeDevice()
 		return false;
 	}
 
+	// Select GPU device
 	err = cudaSetDevice(index);
 	if (cudaSuccess != err)
 	{

@@ -3,6 +3,7 @@
 
 #include <string>
 #include <mutex>
+#include <atomic>
 
 typedef struct _BlenderParams {
 	unsigned int	input_width		= 0;
@@ -33,7 +34,7 @@ public:
 		THREEDIMENSION_BLENDER		= 2,
 		PANORAMIC_CENTER_BLENDER	= 3
 	};
-	explicit CBlenderWrapper() = default;
+	explicit CBlenderWrapper();
 	~CBlenderWrapper();
 
 public:
@@ -49,7 +50,6 @@ private:
 private: 
 	std::string m_offset;
 	BLENDER_DEVICE_TYPE m_deviceType;
-	Timer m_profileTimer;
 	std::mutex m_mutex;
 	std::atomic<CBaseBlender*> m_blender;
 };

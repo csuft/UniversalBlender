@@ -171,17 +171,17 @@ void CBlenderWrapper::runImageBlender(BlenderParams& params, BLENDER_TYPE type)
 	if (checkParameters(params))
 	{
 		CBaseBlender* blender = m_blender.load(std::memory_order_relaxed);
-		blender->setParams(params.input_width, params.input_height, params.output_width, params.output_height, params.offset);
+		blender->setParams(params.input_width, params.input_height, params.output_width, params.output_height, params.offset, type);
 		switch (type)
 		{
 		case CBlenderWrapper::PANORAMIC_BLENDER:
-			blender->runBlender(params.input_data, params.output_data, PANORAMIC_BLENDER);
+			blender->runBlender(params.input_data, params.output_data);
 			break;
 		case CBlenderWrapper::THREEDIMENSION_BLENDER:
-			blender->runBlender(params.input_data, params.output_data, THREEDIMENSION_BLENDER);
+			blender->runBlender(params.input_data, params.output_data);
 			break;
 		case CBlenderWrapper::PANORAMIC_CENTER_BLENDER:
-			blender->runBlender(params.input_data, params.output_data, PANORAMIC_CENTER_BLENDER);
+			blender->runBlender(params.input_data, params.output_data);
 			break;
 		default:
 			break;

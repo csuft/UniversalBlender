@@ -3,6 +3,12 @@
 
 #include "../base/BaseBlender.h"
 
+#include <cuda_runtime.h>
+#include <cuda_runtime_api.h>
+#include <cuda.h>
+#include <cuda_texture_types.h>
+#include <vector>
+
 class CCUDABlender : public CBaseBlender
 {
 public:
