@@ -16,12 +16,7 @@ CCPUBlender::CCPUBlender(int channels)
 
 CCPUBlender::~CCPUBlender()
 {
-	if (m_unrollMap != nullptr)
-	{
-		delete m_unrollMap;
-		m_unrollMap = nullptr;
-	}
-	
+	destroyBlender();
 }
 
 unsigned char* CCPUBlender::addAlphaChannel(const unsigned char* inputImage)

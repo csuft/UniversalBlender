@@ -106,13 +106,6 @@ bool CBlenderWrapper::isSupportCUDA()
 		return false;
 	}
 
-	retVal = cudaSetDevice(index);
-	if (cudaSuccess != retVal)
-	{
-		LOGERR("Error Desc:%s, Error code = %d", cudaGetErrorString(retVal), retVal);
-		return false;
-	}
-
 	return true;
 }
 

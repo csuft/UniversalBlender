@@ -15,14 +15,14 @@
 #include "../utils/log.h"
 
 #define Check_CU(ret) \
-if (ret != cudaSuccess) {
-\
+if (ret != cudaSuccess) {\
 	LOGERR("cuda err:%s ,file:%s,line:%d ...", cudaGetErrorString(ret), __FILE__, __LINE__); return ret; \
 }
+
 texture <uchar4, cudaTextureType2D, cudaReadModeNormalizedFloat>  tex;
 
 //kernel function
-__global__ void mapFishToBlender(int blend_width, int image_width, float *left_map, float *right_map, float *alpha_table, unsigned char *out_img)
+__global__ void mapFinishToBlender(int blend_width, int image_width, float *left_map, float *right_map, float *alpha_table, unsigned char *out_img)
 {
 	int x = (blockIdx.x * blockDim.x) + threadIdx.x;
 	int y = (blockIdx.y * blockDim.y) + threadIdx.y;
@@ -104,7 +104,7 @@ BLEND_RIGHT:
 }
 //cuda  blender
 
-extern "C" cudaError_t cuFishToBlender(cudaArray *inputBuffer, float *left_map, float*right_map, float* alpha_table, int image_width, int image_height, int bd_width, dim3 thread, dim3 numBlock, unsigned char *uOutBuffer)
+extern "C" cudaError_t cuFinishToBlender(cudaArray *inputBuffer, float *left_map, float*right_map, float* alpha_table, int image_width, int image_height, int bd_width, dim3 thread, dim3 numBlock, unsigned char *uOutBuffer)
 {
 	cudaError_t ret = cudaSuccess;
 	tex.addressMode[0] = cudaAddressModeClamp;
@@ -112,7 +112,7 @@ extern "C" cudaError_t cuFishToBlender(cudaArray *inputBuffer, float *left_map, 
 	tex.normalized = false;
 	tex.filterMode = cudaFilterModeLinear;
 	Check_CU(cudaBindTextureToArray(tex, inputBuffer));
-	mapFishToBlender <<<numBlock, thread >>>(bd_width, image_width, left_map, right_map, alpha_table, uOutBuffer);
+	mapFinishToBlender <<<numBlock, thread >>>(bd_width, image_width, left_map, right_map, alpha_table, uOutBuffer);
 
 	return ret;
 
