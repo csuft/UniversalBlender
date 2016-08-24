@@ -111,7 +111,9 @@ extern "C" cudaError_t cuFinishToBlender(cudaArray *inputBuffer, float *left_map
 	tex.addressMode[1] = cudaAddressModeClamp;
 	tex.normalized = false;
 	tex.filterMode = cudaFilterModeLinear;
-	checkError(cudaBindTextureToArray(tex, inputBuffer, nullptr));
+
+	cudaChannelFormatDesc channelDesc; 
+	checkError(cudaBindTextureToArray(tex, inputBuffer));
 	mapFinishToBlender <<<numBlock, thread >>>(bd_width, image_width, left_map, right_map, alpha_table, uOutBuffer);
 
 	return ret;
