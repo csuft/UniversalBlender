@@ -170,30 +170,39 @@ void CBlenderWrapper::getSingleInstance()
 	LOGINFO("Instance address: %p", temp);
 }
 
+void CBlenderWrapper::initializeDevice()
+{
+	switch (m_deviceType)
+	{
+	case CBlenderWrapper::CUDA_BLENDER:
+		CCUDABlender* blender = dynamic_cast<CCUDABlender*>(m_blender.load(std::memory_order_relaxed));
+		blender->initializeDevice();
+		break;
+	case CBlenderWrapper::OPENCL_BLENDER:
+		COpenCLBlender* blender = dynamic_cast<COpenCLBlender*>(m_blender.load(std::memory_order_relaxed));
+		blender->initializeDevice();
+		break;
+	case CBlenderWrapper::CPU_BLENDER:
+		// leave it alone
+		break;
+	default:
+		break;
+	}
+}
+
 // 该接口封装CPU/OPENCL/CUDA进行图像拼接渲染
 void CBlenderWrapper::runImageBlender(BlenderParams& params, BLENDER_TYPE type)
 {
 	if (checkParameters(params))
 	{
 		CBaseBlender* blender = m_blender.load(std::memory_order_relaxed);
-		blender->setupBlender();
-		blender->setParams(params.input_width, params.input_height, params.output_width, params.output_height, params.offset, type);
-		switch (type)
+		bool retVal = blender->setParams(params.input_width, params.input_height, params.output_width, params.output_height, params.offset, type);
+		if (retVal)
 		{
-		case CBlenderWrapper::PANORAMIC_BLENDER:
+			blender->setupBlender();
 			blender->runBlender(params.input_data, params.output_data);
-			break;
-		case CBlenderWrapper::THREEDIMENSION_BLENDER:
-			blender->runBlender(params.input_data, params.output_data);
-			break;
-		case CBlenderWrapper::PANORAMIC_CENTER_BLENDER:
-			blender->runBlender(params.input_data, params.output_data);
-			break;
-		default:
-			break;
 		}
 	}
-	
 }
 
 bool CBlenderWrapper::checkParameters(BlenderParams& params)

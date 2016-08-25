@@ -16,10 +16,12 @@ public:
 	CCUDABlender(int channels);
 	~CCUDABlender();
 
+	bool initializeDevice();
+
 	virtual void setupBlender();
 	virtual void runBlender(unsigned char* input_data, unsigned char* output_data);
 	virtual void destroyBlender();
-
+	virtual bool setParams(const unsigned int iw, const unsigned int ih, const unsigned int ow, const unsigned oh, std::string offset, int type);
 	// private data member
 private:
 	unsigned int m_inputImageSize;
@@ -33,12 +35,7 @@ private:
 	float* m_cudaAlphaTable;
 
 	float* m_cudaLeftMapData;
-	float* m_cudaRightMapData;
-
-	// private method member
-private:
-	bool initializeDevice();
-	bool setParams(const unsigned int iw, const unsigned int ih, const unsigned int ow, const unsigned oh, std::string offset, int type);
+	float* m_cudaRightMapData; 
 };
 
 

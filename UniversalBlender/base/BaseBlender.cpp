@@ -4,7 +4,7 @@
 #include <regex>
 
 CBaseBlender::CBaseBlender() : m_channels(0), m_blendWidth(0), m_leftMapData(nullptr), m_rightMapData(nullptr), m_unrollMap(nullptr),
-								m_inputHeight(0), m_inputWidth(0), m_outputWidth(0), m_outputHeight(0), m_paramsChanged(false)
+m_inputHeight(0), m_inputWidth(0), m_outputWidth(0), m_outputHeight(0), m_paramsChanged(false), m_blenderType(1)
 {
 }
 
@@ -58,6 +58,7 @@ bool CBaseBlender::setParams(const unsigned int iw, const unsigned int ih, const
 		// To indicate the parameters have changed.
 		m_paramsChanged = true;
 	}
+	m_blenderType = type;
 
 	return true;
 }

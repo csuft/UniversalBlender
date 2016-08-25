@@ -16,6 +16,9 @@ m_cudaAlphaTable(nullptr), m_cudaArray(nullptr), m_cudaLeftMapData(nullptr), m_c
 		channels = 4;
 	}
 	m_channels = channels;
+	m_threadsPerBlock.x = 16;
+	m_threadsPerBlock.y = 16;
+	m_threadsPerBlock.z = 1;
 }
 
 
@@ -26,14 +29,13 @@ CCUDABlender::~CCUDABlender()
 
 void CCUDABlender::setupBlender()
 {
+	cudaError_t err = cudaSuccess;
+
 	if (m_paramsChanged)
 	{
 		if (m_unrollMap != nullptr)
 		{
-			delete m_unrollMap;
-			m_unrollMap = nullptr;
-			m_leftMapData = nullptr;
-			m_rightMapData = nullptr;
+			destroyBlender();
 		}
 		m_unrollMap = new UnrollMap;
 		m_unrollMap->setOffset(m_offset);
@@ -41,59 +43,54 @@ void CCUDABlender::setupBlender()
 		m_leftMapData = m_unrollMap->getMapLeft();
 		m_rightMapData = m_unrollMap->getMapRight();
 		m_paramsChanged = false;
-	}
 
-	cudaError_t err = cudaSuccess;
-	if (m_blenderType == 1)
-	{
-		err = cudaMalloc(&m_cudaLeftMapData, sizeof(float)*m_outputImageSize * 2);
-		err = cudaMalloc(&m_cudaRightMapData, sizeof(float)*m_outputImageSize * 2);
-		err = cudaMemcpy(m_cudaLeftMapData, m_leftMapData, sizeof(float)*m_outputImageSize * 2, cudaMemcpyHostToDevice);
-		err = cudaMemcpy(m_cudaRightMapData, m_rightMapData, sizeof(float)*m_outputImageSize * 2, cudaMemcpyHostToDevice);
-
-		float alpha, lamda, gamma, a;
-		for (int i = 0; i < m_blendWidth * 2; i++)
+		if (m_blenderType == 1)
 		{
-			alpha = static_cast<float>(i) / (m_blendWidth * 2);
-			lamda = 5.2, gamma = 1.0, a = 0.5;
-			if (alpha <= 0.5)
+			err = cudaMalloc(&m_cudaLeftMapData, sizeof(float)*m_outputImageSize * 2);
+			err = cudaMalloc(&m_cudaRightMapData, sizeof(float)*m_outputImageSize * 2);
+			err = cudaMemcpy(m_cudaLeftMapData, m_leftMapData, sizeof(float)*m_outputImageSize * 2, cudaMemcpyHostToDevice);
+			err = cudaMemcpy(m_cudaRightMapData, m_rightMapData, sizeof(float)*m_outputImageSize * 2, cudaMemcpyHostToDevice);
+
+			float alpha, lamda, gamma, a;
+			for (int i = 0; i < m_blendWidth * 2; i++)
 			{
-				alpha = a*pow(2.0*alpha, lamda);
+				alpha = static_cast<float>(i) / (m_blendWidth * 2);
+				lamda = 5.2, gamma = 1.0, a = 0.5;
+				if (alpha <= 0.5)
+				{
+					alpha = a*pow(2.0*alpha, lamda);
+				}
+				else
+				{
+					alpha = 1.0 - (1.0 - a)*pow(2.0*(1.0 - alpha), lamda);
+				}
+				alpha = pow(alpha, gamma);
+				m_alphaTable.push_back(alpha);
 			}
-			else
-			{
-				alpha = 1.0 - (1.0 - a)*pow(2.0*(1.0 - alpha), lamda);
-			}
-			alpha = pow(alpha, gamma);
-			m_alphaTable.push_back(alpha);
+
+			err = cudaMalloc(&m_cudaAlphaTable, sizeof(float)*m_alphaTable.size());
+			err = cudaMemcpy(m_cudaAlphaTable, m_alphaTable.data(), sizeof(float)*m_alphaTable.size(), cudaMemcpyHostToDevice);
+			m_alphaTable.clear();
+		}
+		else if (m_blenderType == 2)
+		{
+
+		}
+		else
+		{
+
 		}
 
-		err = cudaMalloc(&m_cudaAlphaTable, sizeof(float)*m_alphaTable.size());
-		err = cudaMemcpy(m_cudaAlphaTable, m_alphaTable.data(), sizeof(float)*m_alphaTable.size(), cudaMemcpyHostToDevice);
-		m_alphaTable.clear();
+		err = cudaMalloc(&m_cudaInputBuffer, m_inputImageSize * m_channels * sizeof(unsigned char));
+		err = cudaMalloc(&m_cudaOutputBuffer, m_outputImageSize * m_channels * sizeof(unsigned char));
+
+		m_numBlocksBlend.x = m_outputWidth / m_threadsPerBlock.x;
+		m_numBlocksBlend.y = m_outputHeight / m_threadsPerBlock.y;
+		m_numBlocksBlend.z = 1;
+
+		cudaChannelFormatDesc channel_desc = cudaCreateChannelDesc<uchar4>();
+		err = cudaMallocArray(&m_cudaArray, &channel_desc, m_inputWidth, m_inputHeight);
 	}
-	else if (m_blenderType == 2)
-	{
-
-	}
-	else
-	{
-
-	}
-
-	err = cudaMalloc(&m_cudaInputBuffer, m_inputImageSize*m_channels*sizeof(unsigned char));
-	err = cudaMalloc(&m_cudaOutputBuffer, m_outputImageSize*m_channels*sizeof(unsigned char));
-
-	m_threadsPerBlock.x = 16;
-	m_threadsPerBlock.y = 16;
-	m_threadsPerBlock.z = 1;
-
-	m_numBlocksBlend.x = m_outputWidth / m_threadsPerBlock.x;
-	m_numBlocksBlend.y = m_outputHeight / m_threadsPerBlock.y;
-	m_numBlocksBlend.z = 1;
-
-	cudaChannelFormatDesc channel_desc = cudaCreateChannelDesc<uchar4>();
-	err = cudaMallocArray(&m_cudaArray, &channel_desc, m_inputWidth, m_inputHeight);
 }
 
 void CCUDABlender::runBlender(unsigned char* input_data, unsigned char* output_data)

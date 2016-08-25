@@ -40,6 +40,7 @@ public:
 public:
 	int capabilityAssessment();
 	void getSingleInstance();
+	void initializeDevice();
 	void runImageBlender(BlenderParams& params, BLENDER_TYPE type);
 
 private:

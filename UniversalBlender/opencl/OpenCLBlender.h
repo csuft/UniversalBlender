@@ -17,6 +17,8 @@ public:
 	COpenCLBlender();
 	COpenCLBlender(int channels);
 	~COpenCLBlender();
+
+	void initializeDevice();
 	 
 	virtual void runBlender(unsigned char* input_data, unsigned char* output_data);
 	virtual void destroyBlender();
@@ -24,7 +26,6 @@ public:
 
 	//private data member
 private:
-	void initializeDevice();
 	inline bool checkError(cl_int err, const char* name);
 	
 	// private method member
