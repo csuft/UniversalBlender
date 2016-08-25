@@ -11,7 +11,7 @@ m_inputHeight(0), m_inputWidth(0), m_outputWidth(0), m_outputHeight(0), m_params
 
 CBaseBlender::~CBaseBlender()
 {
-	// leave alone
+	// leave it alone
 }
 
 void CBaseBlender::setupBlender()

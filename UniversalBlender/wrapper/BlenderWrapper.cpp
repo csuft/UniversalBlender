@@ -172,15 +172,25 @@ void CBlenderWrapper::getSingleInstance()
 
 void CBlenderWrapper::initializeDevice()
 {
+	CCUDABlender* cudaBlender = nullptr;
+	COpenCLBlender* openclBlender = nullptr;
 	switch (m_deviceType)
 	{
 	case CBlenderWrapper::CUDA_BLENDER:
-		CCUDABlender* blender = dynamic_cast<CCUDABlender*>(m_blender.load(std::memory_order_relaxed));
-		blender->initializeDevice();
+		cudaBlender = dynamic_cast<CCUDABlender*>(m_blender.load(std::memory_order_relaxed));
+		if (cudaBlender)
+		{
+			cudaBlender->initializeDevice();
+		}
+		
 		break;
 	case CBlenderWrapper::OPENCL_BLENDER:
-		COpenCLBlender* blender = dynamic_cast<COpenCLBlender*>(m_blender.load(std::memory_order_relaxed));
-		blender->initializeDevice();
+		openclBlender = dynamic_cast<COpenCLBlender*>(m_blender.load(std::memory_order_relaxed));
+		if (openclBlender)
+		{
+			openclBlender->initializeDevice();
+		}
+		
 		break;
 	case CBlenderWrapper::CPU_BLENDER:
 		// leave it alone
