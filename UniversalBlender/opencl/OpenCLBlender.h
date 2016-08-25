@@ -15,6 +15,7 @@ class COpenCLBlender : public CBaseBlender
 {
 public:
 	COpenCLBlender();
+	COpenCLBlender(int channels);
 	~COpenCLBlender();
 	 
 	virtual void runBlender(unsigned char* input_data, unsigned char* output_data);

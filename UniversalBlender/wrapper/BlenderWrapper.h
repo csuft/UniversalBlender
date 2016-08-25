@@ -38,8 +38,8 @@ public:
 	~CBlenderWrapper();
 
 public:
-	void capabilityAssessment();
-	CBaseBlender* getSingleInstance();
+	int capabilityAssessment();
+	void getSingleInstance();
 	void runImageBlender(BlenderParams& params, BLENDER_TYPE type);
 
 private:

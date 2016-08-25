@@ -34,23 +34,25 @@ CBlenderWrapper::~CBlenderWrapper()
 	}
 }
 
-void CBlenderWrapper::capabilityAssessment()
+int CBlenderWrapper::capabilityAssessment()
 {
 	if (isSupportCUDA())
 	{
 		m_deviceType = CUDA_BLENDER;
-		LOGINFO("CUDA compute technology is available in this platform!");
+		LOGINFO("CUDA compute technology is available in this platform.");
 	}
 	else if (isSupportOpenCL())
 	{
 		m_deviceType = OPENCL_BLENDER;
-		LOGINFO("OpenCL compute technology is available in this platform!");
+		LOGINFO("OpenCL compute technology is available in this platform.");
 	}
 	else
 	{
 		m_deviceType = CPU_BLENDER;
-		LOGINFO("Only CPU is available in this platform!");
-	}
+		LOGINFO("Only CPU is available in this platform.");
+	} 
+
+	return m_deviceType;
 }
 
 // Determine whether the platform support CUDA.
@@ -78,7 +80,7 @@ bool CBlenderWrapper::isSupportCUDA()
 		// Compute capability at least be 1.x
 		if (deviceProps.major >= 1)
 		{
-			LOGINFO("CUDA Device Info:\nName: %s\nTotalGlobalMem:%u MB\nSharedMemPerBlock:%d KB\nRegsPerBlock : %d\nwarpSize:%d\nmemPitch: %d\nMaxThreadPerBlock:%d\nMaxThreadsDim:x = %d, y = %d,z =%d\nMaxGridSize: x = %d,y = %d,z = %d\nTotalConstMem : %d\nmajor:%d\nminor:5d\nTextureAlignment:%d\n", 
+			LOGINFO("CUDA Device Info:\nName: \t\t%s\nTotalGlobalMem:\t\t%uMB\nSharedMemPerBlock:\t%dKB\nRegsPerBlock:\t\t%d\nwarpSize:\t\t\t%d\nmemPitch:\t\t\t%d\nMaxThreadPerBlock:\t%d\nMaxThreadsDim:\t\tx = %d, y = %d,z =%d\nMaxGridSize: \t\tx = %d,y = %d,z = %d\nTotalConstMem:\t\t%d\nmajor:\t\t\t\t%d\nminor:\t\t\t\t5d\nTextureAlignment:\t%d\t", 
 				deviceProps.name,
 				deviceProps.totalGlobalMem / (1024 * 1024),
 				deviceProps.sharedMemPerBlock / 1024,
@@ -131,14 +133,14 @@ bool CBlenderWrapper::isSupportOpenCL()
 		err = platformList[i].getInfo((cl_platform_info)CL_PLATFORM_PROFILE, &platformProfile);
 		err = platformList[i].getInfo((cl_platform_info)CL_PLATFORM_NAME, &platformName);
 		err = platformList[i].getInfo((cl_platform_info)CL_PLATFORM_VERSION, &platformVersion);
-		LOGINFO("Platform vendor: %s, version: %s, name: %s, profile: %s", platformVendor.c_str(), platformVersion.c_str(), platformName.c_str(), platformProfile.c_str());
+		LOGINFO("Platform vendor: \t\t%s, version: \t\t%s, name: %s, profile: %s", platformVendor.c_str(), platformVersion.c_str(), platformName.c_str(), platformProfile.c_str());
 	}
 
 	return true;
 }
 
 // Implement singleton pattern using C++11 low level ordering constraints.
-CBaseBlender* CBlenderWrapper::getSingleInstance()
+void CBlenderWrapper::getSingleInstance()
 {
 	CBaseBlender* temp = m_blender.load(std::memory_order_acquire);
 	if (temp == nullptr)
@@ -150,19 +152,22 @@ CBaseBlender* CBlenderWrapper::getSingleInstance()
 			if (CUDA_BLENDER == m_deviceType)
 			{
 				temp = new CCUDABlender;
+				LOGINFO("CUDA instance address: %p", temp);
 			}
 			else if (OPENCL_BLENDER == m_deviceType)
 			{
 				temp = new COpenCLBlender;
+				LOGINFO("OpenCL instance address: %p", temp);
 			}
 			else
 			{
 				temp = new CCPUBlender;
+				LOGINFO("CPU instance address: %p", temp);
 			}
 			m_blender.store(temp, std::memory_order_release);
 		}
 	}
-	return temp;
+	LOGINFO("Instance address: %p", temp);
 }
 
 // 该接口封装CPU/OPENCL/CUDA进行图像拼接渲染
@@ -171,6 +176,7 @@ void CBlenderWrapper::runImageBlender(BlenderParams& params, BLENDER_TYPE type)
 	if (checkParameters(params))
 	{
 		CBaseBlender* blender = m_blender.load(std::memory_order_relaxed);
+		blender->setupBlender();
 		blender->setParams(params.input_width, params.input_height, params.output_width, params.output_height, params.offset, type);
 		switch (type)
 		{

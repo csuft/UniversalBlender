@@ -13,6 +13,7 @@ class CCUDABlender : public CBaseBlender
 {
 public:
 	CCUDABlender();
+	CCUDABlender(int channels);
 	~CCUDABlender();
 
 	virtual void setupBlender();

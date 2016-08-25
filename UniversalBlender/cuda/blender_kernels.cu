@@ -13,10 +13,11 @@
 #include "../utils/log.h"
 
 cudaError_t checkError(cudaError_t ret) {
-	if (ret != cudaSuccess) {
+	if (ret != cudaSuccess)
+	{
 		LOGERR("cuda err:%s ,file:%s,line:%d ...", cudaGetErrorString(ret), __FILE__, __LINE__);
-		return ret;
 	}
+	return ret;
 }
 
 texture<uchar4, cudaTextureType2D, cudaReadModeNormalizedFloat> tex;
@@ -112,7 +113,6 @@ extern "C" cudaError_t cuFinishToBlender(cudaArray *inputBuffer, float *left_map
 	tex.normalized = false;
 	tex.filterMode = cudaFilterModeLinear;
 
-	cudaChannelFormatDesc channelDesc; 
 	checkError(cudaBindTextureToArray(tex, inputBuffer));
 	mapFinishToBlender <<<numBlock, thread >>>(bd_width, image_width, left_map, right_map, alpha_table, uOutBuffer);
 

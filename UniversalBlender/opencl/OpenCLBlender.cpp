@@ -1,11 +1,21 @@
 #include "OpenCLBlender.h"
 
 
-COpenCLBlender::COpenCLBlender() : m_inputImageSize(0), m_outputImageSize(0), m_heightFactor(0), m_widthFactor(0)
+COpenCLBlender::COpenCLBlender() : COpenCLBlender(4)
+{
+
+}
+
+COpenCLBlender::COpenCLBlender(int channels) : m_inputImageSize(0), m_outputImageSize(0), m_heightFactor(0), m_widthFactor(0)
 {
 	memset(m_origins, 0, sizeof(int)* 3);
 	memset(m_inputParams, 0, sizeof(int)* 16);
 	m_unrollMap = new UnrollMap;
+	if (channels != 3 || channels != 4)
+	{
+		channels = 4;
+	}
+	m_channels = channels;
 }
 
 

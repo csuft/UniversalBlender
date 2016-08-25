@@ -84,12 +84,12 @@
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_WIN64;_MBCS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v7.5\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v7.5\include;E:\WorkProjects\cppunit\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>E:\WorkProjects\UniversalBlender\UniversalBlender\lib\win;C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v7.5\lib\x64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>OpenCL.lib;cublas.lib;cublas_device.lib;cuda.lib;cudart.lib;UnrollMapd64.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>E:\WorkProjects\UniversalBlender\UniversalBlender\lib\win;C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v7.5\lib\x64;E:\WorkProjects\cppunit\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>cppunitd.lib;OpenCL.lib;cublas.lib;cublas_device.lib;cuda.lib;cudart.lib;UnrollMapd64.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -126,6 +126,11 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="base\BaseBlender.cpp" />
+    <None Include="test\BlenderWrapperTest.cpp" />
+    <None Include="test\CPUBlenderTest.cpp" />
+    <None Include="test\CUDABlenderTest.cpp" />
+    <None Include="test\main.cpp" />
+    <None Include="test\OpenCLBlenderTest.cpp" />
     <ClCompile Include="utils\base64.cpp" />
     <ClCompile Include="wrapper\BlenderWrapper.cpp" />
     <ClCompile Include="cpu\CPUBlender.cpp" />
@@ -136,6 +141,11 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="base\BaseBlender.h" />
+    <None Include="test\BlenderWrapperTest.h" />
+    <None Include="test\CPUBlenderTest.h" />
+    <None Include="test\CUDABlenderTest.h" />
+    <None Include="test\headers.h" />
+    <None Include="test\OpenCLBlenderTest.h" />
     <ClInclude Include="utils\base64.h" />
     <ClInclude Include="wrapper\BlenderWrapper.h" />
     <ClInclude Include="cpu\CPUBlender.h" />

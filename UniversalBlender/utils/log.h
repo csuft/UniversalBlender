@@ -1,4 +1,5 @@
-﻿#ifndef _TT_LOG_H_
+﻿#define _CRT_SECURE_NO_WARNINGS
+#ifndef _TT_LOG_H_
 #define _TT_LOG_H_
 
 #include <stdarg.h>
@@ -7,15 +8,25 @@
 #include <string>
 
 #if (defined _WIN32 || defined _WIN64)
-	#include <windows.h>
-	#include <direct.h>
-	#include <io.h>
+#include <windows.h>
+#include <assert.h>
+#include <direct.h>
+#include <io.h>
 #else
-	#include <unistd.h>
-	#include <pthread.h>
+#include <unistd.h>
+#include <pthread.h>
 #endif
 
-class CMyLog
+
+#if (defined _WIN32 || defined _WIN64)
+#define CC_STRCMP(src, dst) _stricmp(src, dst)
+#define CC_SPRINTF _snprintf
+#else
+#define CC_STRCMP(src, dst) strcmp(src, dst)
+#define CC_SPRINTF snprintf
+#endif
+
+class  CMyLog
 {
 public:
 	CMyLog();
@@ -23,20 +34,22 @@ public:
 
 	static CMyLog& GetInstance();
 	void Log(unsigned char level, const char* file, int line, const char* fmt, ...);
+	void Log(unsigned char level, const char* str);
 
 private:
 	void ChangeLogFile();
-	
+	// 全局文件指针
 	FILE* m_fp;
 	unsigned int m_ulFileSize;
 	unsigned char m_ucLevel;
+
 	std::string m_path;
 
-	#if (defined _WIN32 || defined _WIN64)
+#if (defined _WIN32 || defined _WIN64)
 	HANDLE m_hMutex;
-	#else
+#else
 	pthread_mutex_t m_mutex;
-	#endif
+#endif
 
 };
 
@@ -47,14 +60,6 @@ private:
 #define LOGERR(fmt, ...)  CMyLog::GetInstance().Log(LOG_LEVEL_ERR,  __FILE__, __LINE__, fmt, ##__VA_ARGS__);
 #define LOGINFO(fmt, ...) CMyLog::GetInstance().Log(LOG_LEVEL_INFO, __FILE__, __LINE__, fmt, ##__VA_ARGS__);
 #define LOGDBG(fmt, ...)  CMyLog::GetInstance().Log(LOG_LEVEL_DBG,  __FILE__, __LINE__, fmt, ##__VA_ARGS__);
-
-#if (defined _WIN32 || defined _WIN64)
-#define STRCMP(src, dst) _stricmp(src, dst)
-#define SPRINTF _snprintf
-#else
-#define STRCMP(src, dst) strcmp(src, dst)
-#define SPRINTF snprintf
 #endif
 
-#endif
 

@@ -81,6 +81,36 @@
     <None Include="bin\win\UnrollMapd32.dll" />
     <None Include="bin\win\UnrollMapd64.dll" />
     <None Include="opencl\blender_kernels.cl" />
+    <None Include="test\BlenderWrapperTest.cpp">
+      <Filter>源文件</Filter>
+    </None>
+    <None Include="test\BlenderWrapperTest.h">
+      <Filter>头文件</Filter>
+    </None>
+    <None Include="test\CPUBlenderTest.cpp">
+      <Filter>源文件</Filter>
+    </None>
+    <None Include="test\CPUBlenderTest.h">
+      <Filter>头文件</Filter>
+    </None>
+    <None Include="test\CUDABlenderTest.cpp">
+      <Filter>源文件</Filter>
+    </None>
+    <None Include="test\CUDABlenderTest.h">
+      <Filter>头文件</Filter>
+    </None>
+    <None Include="test\headers.h">
+      <Filter>头文件</Filter>
+    </None>
+    <None Include="test\main.cpp">
+      <Filter>源文件</Filter>
+    </None>
+    <None Include="test\OpenCLBlenderTest.cpp">
+      <Filter>源文件</Filter>
+    </None>
+    <None Include="test\OpenCLBlenderTest.h">
+      <Filter>头文件</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <CudaCompile Include="cuda\blender_kernels.cu" />
