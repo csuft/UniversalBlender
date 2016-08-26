@@ -5,6 +5,8 @@
 #include "wrapper/BlenderWrapper.h" 
 #define OUTPUT_WIDTH 4096
 #define OUTPUT_HEIGHT 2048
+#define INPUT_WIDTH 3040
+#define INPUT_HEIGHT 1520
 
 using namespace cv;
 
@@ -12,47 +14,15 @@ using namespace cv;
 void testCUDA()
 {
 	std::string offset = "2_748.791_759.200_758.990_0.000_0.000_90.000_742.211_2266.919_750.350_-0.300_0.100_90.030_3040_1520_1026";
-	cv::Mat inputImage = cv::imread("input.jpg");
-	cv::Mat outputImage(OUTPUT_HEIGHT, OUTPUT_WIDTH, CV_8UC3);
-
-	BlenderParams params;
-	params.input_width = inputImage.cols;
-	params.input_height = inputImage.rows;
-	params.output_width = inputImage.cols;
-	params.output_height = inputImage.rows;
-	params.offset = offset;
-	params.input_data = inputImage.data;
-	params.output_data = outputImage.data;
-
-	// 1. capabilityAssessment()
-	// 2. getSingleInstance();
-	// 3. initializeDevice();
-	// 4. runImageBlender();
-	CBlenderWrapper* wrapper = new CBlenderWrapper;
-	wrapper->capabilityAssessment();
-	wrapper->getSingleInstance();
-	wrapper->initializeDevice();
-	wrapper->runImageBlender(params, CBlenderWrapper::PANORAMIC_BLENDER);
-
-	cv::imshow("Blender Result", outputImage);
-	cv::waitKey(20);
-	cv::imwrite("BlenderResult_CUDA.jpg", outputImage);
-
-	delete wrapper;
-}
-
-void testOpenCL()
-{
-	std::string offset = "2_748.791_759.200_758.990_0.000_0.000_90.000_742.211_2266.919_750.350_-0.300_0.100_90.030_3040_1520_1026";
-	unsigned char* inputImage = new unsigned char[4 * 3040 * 1520];
+	unsigned char* inputImage = new unsigned char[4 * INPUT_WIDTH* INPUT_HEIGHT];
 	FILE* file = fopen("output.dat", "rb");
-	fread(inputImage, 1, 4*1520*3040, file);
+	fread(inputImage, 1, 4 * INPUT_WIDTH * INPUT_HEIGHT, file);
 	fclose(file);
 	cv::Mat outputImage(OUTPUT_HEIGHT, OUTPUT_WIDTH, CV_8UC4);
 
 	BlenderParams params;
-	params.input_width = 3040;
-	params.input_height = 1520;
+	params.input_width = INPUT_WIDTH;
+	params.input_height = INPUT_HEIGHT;
 	params.output_width = OUTPUT_WIDTH;
 	params.output_height = OUTPUT_HEIGHT;
 	params.offset = offset;
@@ -70,7 +40,40 @@ void testOpenCL()
 	wrapper->runImageBlender(params, CBlenderWrapper::PANORAMIC_BLENDER);
 
 	cv::imshow("Blender Result", outputImage);
-	cv::waitKey(20);
+	cv::imwrite("BlenderResult_CUDA.jpg", outputImage);
+
+	delete wrapper;
+}
+
+void testOpenCL()
+{
+	std::string offset = "2_748.791_759.200_758.990_0.000_0.000_90.000_742.211_2266.919_750.350_-0.300_0.100_90.030_3040_1520_1026";
+	unsigned char* inputImage = new unsigned char[4 * INPUT_WIDTH * INPUT_HEIGHT];
+	FILE* file = fopen("output.dat", "rb");
+	fread(inputImage, 1, 4*INPUT_WIDTH*INPUT_HEIGHT, file);
+	fclose(file);
+	cv::Mat outputImage(OUTPUT_HEIGHT, OUTPUT_WIDTH, CV_8UC4);
+
+	BlenderParams params;
+	params.input_width = INPUT_WIDTH;
+	params.input_height = INPUT_HEIGHT;
+	params.output_width = OUTPUT_WIDTH;
+	params.output_height = OUTPUT_HEIGHT;
+	params.offset = offset;
+	params.input_data = inputImage;
+	params.output_data = outputImage.data;
+
+	// 1. capabilityAssessment()
+	// 2. getSingleInstance();
+	// 3. initializeDevice();
+	// 4. runImageBlender();
+	CBlenderWrapper* wrapper = new CBlenderWrapper;
+	wrapper->capabilityAssessment();
+	wrapper->getSingleInstance(4);
+	wrapper->initializeDevice();
+	wrapper->runImageBlender(params, CBlenderWrapper::PANORAMIC_BLENDER);
+
+	cv::imshow("Blender Result", outputImage); 
 	cv::imwrite("BlenderResult_OpenCL.jpg", outputImage);
 
 	delete wrapper;
@@ -102,8 +105,7 @@ void testCPU()
 	wrapper->initializeDevice();
 	wrapper->runImageBlender(params, CBlenderWrapper::PANORAMIC_BLENDER);
 
-	cv::imshow("Blender Result", outputImage);
-	cv::waitKey(20);
+	cv::imshow("Blender Result", outputImage); 
 	cv::imwrite("BlenderResult_CPU.jpg", outputImage);
 
 	delete wrapper;
@@ -147,6 +149,6 @@ void convert()
 
 int main(void)
 {
-	testOpenCL();
+	testCUDA();
 	return 0;
 }

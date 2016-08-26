@@ -125,6 +125,7 @@ void CBaseBlender::splitOffset(std::string& s, char delim, std::vector< std::str
 */
 bool CBaseBlender::isOffsetValid(std::string& _offset)
 {
+	LOGINFO("Offset: %s", _offset.c_str());
 	// to be fix
 	//////////////////////////////////////////////////////////////////////////
 	std::string temp;
@@ -144,7 +145,7 @@ bool CBaseBlender::isOffsetValid(std::string& _offset)
 	}
 	//////////////////////////////////////////////////////////////////////////
 	_offset = trimOffset(temp);
-	LOGINFO("Trimmed offset: %s", _offset.c_str());
+	//LOGINFO("Trimmed offset: %s", _offset.c_str());
 	std::vector<std::string> result;
 	splitOffset(_offset, '_', result);
 	std::vector<std::string>::iterator itb = result.begin();

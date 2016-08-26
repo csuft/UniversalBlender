@@ -97,7 +97,7 @@ void CCUDABlender::runBlender(unsigned char* input_data, unsigned char* output_d
 	if (m_blenderType == 1)
 	{
 		err = cudaMemcpyToArray(m_cudaArray, 0, 0, input_data, m_inputImageSize * m_channels * sizeof(unsigned char), cudaMemcpyHostToDevice);
-		err = cuFinishToBlender(m_cudaArray, m_cudaLeftMapData, m_cudaRightMapData, m_cudaAlphaTable, m_inputWidth, m_inputHeight, m_blendWidth, m_threadsPerBlock, m_numBlocksBlend, m_cudaOutputBuffer);
+		err = cuFinishToBlender(m_cudaArray, m_cudaLeftMapData, m_cudaRightMapData, m_cudaAlphaTable, m_outputWidth, m_outputHeight, m_blendWidth, m_threadsPerBlock, m_numBlocksBlend, m_cudaOutputBuffer);
 		err = cudaMemcpy(output_data, m_cudaOutputBuffer, m_outputImageSize * m_channels * sizeof(unsigned char), cudaMemcpyDeviceToHost);
 	}
 	else if (m_blenderType == 2)
@@ -207,7 +207,7 @@ bool CCUDABlender::initializeDevice()
 			// 只要找到一个Compute Capability >= 1的设备就行
 			if (props.major >= 1)
 			{
-				LOGINFO("CUDA Device  Info:\nName: %s\nTotalGlobalMem:%u MB\nSharedMemPerBlock:%d KB\nRegsPerBlock : %d\nwarpSize:%d\nmemPitch: %d\nMaxThreadPerBlock:%d\nMaxThreadsDim:x = %d, y = %d,z =%d\nMaxGridSize: x = %d,y = %d,z = %d\nTotalConstMem : %d\nmajor:%d\nminor:5d\nTextureAlignment:%d\n", 
+				LOGINFO("CUDA Device Info:\nName: \t\t\t\t%s\nTotalGlobalMem:\t\t%uMB\nSharedMemPerBlock:\t%dKB\nRegsPerBlock:\t\t%d\nwarpSize:\t\t\t%d\nmemPitch:\t\t\t%d\nMaxThreadPerBlock:\t%d\nMaxThreadsDim:\t\tx = %d, y = %d,z =%d\nMaxGridSize: \t\tx = %d,y = %d,z = %d\nTotalConstMem:\t\t%d\nmajor:\t\t\t\t%d\nminor:\t\t\t\t5d\nTextureAlignment:\t%d\t",
 					props.name,
 					props.totalGlobalMem / (1024 * 1024),
 					props.sharedMemPerBlock / 1024,

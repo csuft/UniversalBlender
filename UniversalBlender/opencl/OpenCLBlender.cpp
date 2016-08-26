@@ -262,6 +262,8 @@ void COpenCLBlender::initializeDevice()
 	std::vector<cl::Device> devices;
 	devices = m_openclContext->getInfo<CL_CONTEXT_DEVICES>();
 	checkError(devices.size() > 0 ? CL_SUCCESS : -1, "devices.size() > 0"); 
+
+	// Step 4: Create source and program object
 	cl::Program::Sources source(1, std::make_pair(BLEND_KERNEL_STRING.c_str(), BLEND_KERNEL_STRING.length() + 1));
 	m_program = new cl::Program(*m_openclContext, source);
 	err = m_program->build(devices, "");
