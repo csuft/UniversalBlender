@@ -19,7 +19,7 @@ public:
 	~COpenCLBlender();
 
 	void initializeDevice();
-	 
+	virtual void setupBlender();
 	virtual void runBlender(unsigned char* input_data, unsigned char* output_data);
 	virtual void destroyBlender();
 	virtual bool setParams(const unsigned int iw, const unsigned int ih, const unsigned int ow, const unsigned int oh, std::string offset, int type);
@@ -39,20 +39,21 @@ private:
 	cl::size_t<3> m_outputRegions;
 	float m_widthFactor, m_heightFactor;
 	int m_inputParams[16];
-	cl::Context m_openclContext;
+	cl::Context* m_openclContext;
+	cl::Program* m_program;
 
 	unsigned char* m_inputBuffer;
-	cl::Image2D m_inputImage;
+	cl::Image2D* m_inputImage;
 
 	unsigned char* m_outputBuffer;
-	cl::Image2D m_outputImage;
+	cl::Image2D* m_outputImage;
 
-	cl::Buffer m_inputParamsBuffer;
-	cl::Buffer m_leftMapBuffer;
-	cl::Buffer m_rightMapBuffer;
+	cl::Buffer* m_inputParamsBuffer;
+	cl::Buffer* m_leftMapBuffer;
+	cl::Buffer* m_rightMapBuffer;
 
-	cl::CommandQueue m_commandQueue;
-	cl::Kernel m_kernel;
+	cl::CommandQueue* m_commandQueue;
+	cl::Kernel* m_kernel;
 };
 
 static const std::string BLEND_KERNEL_STRING =

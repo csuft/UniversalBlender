@@ -33,10 +33,7 @@ void CCUDABlender::setupBlender()
 
 	if (m_paramsChanged)
 	{
-		if (m_unrollMap != nullptr)
-		{
-			destroyBlender();
-		}
+		destroyBlender();
 		m_unrollMap = new UnrollMap;
 		m_unrollMap->setOffset(m_offset);
 		m_unrollMap->init(m_inputWidth, m_inputHeight, m_outputWidth, m_outputHeight, m_blenderType);

@@ -34,24 +34,26 @@ CBlenderWrapper::~CBlenderWrapper()
 	}
 }
 
+// 如果autoChoose为true,则会自动选择计算平台
+// 如果autoChoose为false，则使用用户指定的计算平台
 int CBlenderWrapper::capabilityAssessment()
-{
-	if (isSupportCUDA())
-	{
-		m_deviceType = CUDA_BLENDER;
-		LOGINFO("CUDA compute technology is available in this platform.");
-	}
-	else if (isSupportOpenCL())
-	{
+{ 
+	//if (isSupportCUDA())
+	//{
+	//	m_deviceType = CUDA_BLENDER;
+	//	LOGINFO("CUDA compute technology is available in this platform.");
+	//}
+	//else if (isSupportOpenCL())
+	//{
 		m_deviceType = OPENCL_BLENDER;
 		LOGINFO("OpenCL compute technology is available in this platform.");
-	}
-	else
-	{
-		m_deviceType = CPU_BLENDER;
-		LOGINFO("Only CPU is available in this platform.");
-	} 
-
+	//}
+	//else
+	//{
+	//	m_deviceType = CPU_BLENDER;
+	//	LOGINFO("Only CPU is available in this platform.");
+	//}
+	
 	return m_deviceType;
 }
 
@@ -140,7 +142,7 @@ bool CBlenderWrapper::isSupportOpenCL()
 }
 
 // Implement singleton pattern using C++11 low level ordering constraints.
-void CBlenderWrapper::getSingleInstance()
+void CBlenderWrapper::getSingleInstance(int channels)
 {
 	CBaseBlender* temp = m_blender.load(std::memory_order_acquire);
 	if (temp == nullptr)
@@ -151,17 +153,17 @@ void CBlenderWrapper::getSingleInstance()
 		{
 			if (CUDA_BLENDER == m_deviceType)
 			{
-				temp = new CCUDABlender;
+				temp = new CCUDABlender(channels);
 				LOGINFO("CUDA instance address: %p", temp);
 			}
 			else if (OPENCL_BLENDER == m_deviceType)
 			{
-				temp = new COpenCLBlender;
+				temp = new COpenCLBlender(channels);
 				LOGINFO("OpenCL instance address: %p", temp);
 			}
 			else
 			{
-				temp = new CCPUBlender;
+				temp = new CCPUBlender(channels);
 				LOGINFO("CPU instance address: %p", temp);
 			}
 			m_blender.store(temp, std::memory_order_release);
