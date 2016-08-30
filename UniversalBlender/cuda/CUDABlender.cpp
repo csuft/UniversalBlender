@@ -11,7 +11,7 @@ CCUDABlender::CCUDABlender(int channels) : m_inputImageSize(0), m_outputImageSiz
 m_cudaAlphaTable(nullptr), m_cudaArray(nullptr), m_cudaLeftMapData(nullptr), m_cudaRightMapData(nullptr)
 {
 	m_unrollMap = new UnrollMap;
-	if (channels != 3 || channels != 4)
+	if (channels != 3 && channels != 4)
 	{
 		channels = 4;
 	}

@@ -13,7 +13,7 @@ m_inputParamsBuffer(nullptr), m_leftMapBuffer(nullptr), m_rightMapBuffer(nullptr
 	memset(m_origins, 0, sizeof(int)* 3);
 	memset(m_inputParams, 0, sizeof(int)* 16);
 	m_unrollMap = new UnrollMap;
-	if (channels != 3 || channels != 4)
+	if (channels != 3 && channels != 4)
 	{
 		channels = 4;
 	}
@@ -54,27 +54,15 @@ void COpenCLBlender::runBlender(unsigned char* input_data, unsigned char* output
 {
 	cl_int err;
 	cl::Event event;
-	if (m_blenderType == 1)
-	{
-		// Step 8: Run the kernels
-		// parameters need to be fixed.
-		err = m_commandQueue->enqueueWriteImage(*m_inputImage, CL_TRUE, m_origins, m_inputRegions, 0, 0, input_data, nullptr, &event);
-		err = m_commandQueue->enqueueNDRangeKernel(*m_kernel, cl::NullRange, cl::NDRange(m_outputWidth, m_outputHeight), cl::NDRange(16, 16), nullptr, &event);
-		checkError(err, "CommandQueue::enqueueNDRangeKernel()");
-		event.wait();
-		err = m_commandQueue->enqueueReadImage(*m_outputImage, CL_TRUE, m_origins, m_outputRegions, 0, 0, output_data, 0, &event);
-		checkError(err, "CommandQueue::enqueueReadImage()");
-		CL_INVALID_MEM_OBJECT;
-	}
-	else if (m_blenderType == 2)
-	{
 
-	}
-	else
-	{
-
-	} 
-	
+	// Step 8: Run the kernels
+	// parameters need to be fixed.
+	err = m_commandQueue->enqueueWriteImage(*m_inputImage, CL_TRUE, m_origins, m_inputRegions, 0, 0, input_data, nullptr, &event);
+	err = m_commandQueue->enqueueNDRangeKernel(*m_kernel, cl::NullRange, cl::NDRange(m_outputWidth, m_outputHeight), cl::NDRange(16, 16), nullptr, &event);
+	checkError(err, "CommandQueue::enqueueNDRangeKernel()");
+	event.wait();
+	err = m_commandQueue->enqueueReadImage(*m_outputImage, CL_TRUE, m_origins, m_outputRegions, 0, 0, output_data, 0, &event);
+	checkError(err, "CommandQueue::enqueueReadImage()");
 }
 
 void COpenCLBlender::destroyBlender()
@@ -136,7 +124,7 @@ void COpenCLBlender::setupBlender()
 		destroyBlender();
 		m_unrollMap = new UnrollMap;
 		m_unrollMap->setOffset(m_offset);
-		m_unrollMap->init(m_inputWidth, m_inputHeight, m_outputWidth, m_outputHeight, m_blenderType);
+		m_unrollMap->init(m_inputWidth, m_inputHeight, m_outputWidth, m_outputHeight, 1);
 		m_leftMapData = m_unrollMap->getMap(0);
 		m_rightMapData = m_unrollMap->getMap(1);
 		m_paramsChanged = false;
@@ -201,15 +189,12 @@ bool COpenCLBlender::setParams(const unsigned int iw, const unsigned int ih, con
 		m_widthFactor = 1.0f / m_inputWidth;
 		m_heightFactor = 1.0f / m_inputHeight;
 
-		if (type == 1)
-		{
-			int blenderWidth = 5 * m_outputWidth / 360;
-			m_inputParams[0] = (m_outputWidth >> 2) - (blenderWidth >> 1);
-			m_inputParams[1] = m_inputParams[0] + blenderWidth;
-			m_inputParams[2] = (m_outputWidth * 3 / 4) - (blenderWidth >> 1);
-			m_inputParams[3] = m_inputParams[2] + blenderWidth;
-			m_inputParams[4] = m_outputWidth * 2;
-		}
+		int blenderWidth = 5 * m_outputWidth / 360;
+		m_inputParams[0] = (m_outputWidth >> 2) - (blenderWidth >> 1);      // Left Blender Start
+		m_inputParams[1] = m_inputParams[0] + blenderWidth;					// Left Blender End
+		m_inputParams[2] = (m_outputWidth * 3 / 4) - (blenderWidth >> 1);   // Right Blender Start
+		m_inputParams[3] = m_inputParams[2] + blenderWidth;                 // Right Blender End
+		m_inputParams[4] = m_outputWidth * 2;
 
 		// To indicate the parameters have changed.
 		m_paramsChanged = true;

@@ -39,7 +39,7 @@ public:
 
 public:
 	int capabilityAssessment();
-	void getSingleInstance(int channels = 3);
+	void getSingleInstance(int channels = 4);
 	void initializeDevice();
 	void runImageBlender(BlenderParams& params, BLENDER_TYPE type);
 

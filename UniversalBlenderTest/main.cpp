@@ -3,10 +3,14 @@
 #include <string>
 
 #include "wrapper/BlenderWrapper.h" 
-#define OUTPUT_WIDTH 4096
-#define OUTPUT_HEIGHT 2048
-#define INPUT_WIDTH 3040
-#define INPUT_HEIGHT 1520
+
+// 输入宽高
+#define INPUT_WIDTH 4096
+#define INPUT_HEIGHT 2048
+
+// 输出宽高
+#define OUTPUT_WIDTH 2048
+#define OUTPUT_HEIGHT 1024
 
 using namespace cv;
 
@@ -49,7 +53,7 @@ void testOpenCL()
 {
 	std::string offset = "2_748.791_759.200_758.990_0.000_0.000_90.000_742.211_2266.919_750.350_-0.300_0.100_90.030_3040_1520_1026";
 	unsigned char* inputImage = new unsigned char[4 * INPUT_WIDTH * INPUT_HEIGHT];
-	FILE* file = fopen("output.dat", "rb");
+	FILE* file = fopen("3d.dat", "rb");
 	fread(inputImage, 1, 4*INPUT_WIDTH*INPUT_HEIGHT, file);
 	fclose(file);
 	cv::Mat outputImage(OUTPUT_HEIGHT, OUTPUT_WIDTH, CV_8UC4);
@@ -71,10 +75,10 @@ void testOpenCL()
 	wrapper->capabilityAssessment();
 	wrapper->getSingleInstance(4);
 	wrapper->initializeDevice();
-	wrapper->runImageBlender(params, CBlenderWrapper::PANORAMIC_BLENDER);
+	wrapper->runImageBlender(params, CBlenderWrapper::THREEDIMENSION_BLENDER);
 
 	cv::imshow("Blender Result", outputImage); 
-	cv::imwrite("BlenderResult_OpenCL.jpg", outputImage);
+	cv::imwrite("BlenderResult_OpenCL_3D.jpg", outputImage);
 
 	delete wrapper;
 	delete[] inputImage;
@@ -83,7 +87,7 @@ void testOpenCL()
 void testCPU()
 {
 	std::string offset = "2_748.791_759.200_758.990_0.000_0.000_90.000_742.211_2266.919_750.350_-0.300_0.100_90.030_3040_1520_1026";
-	cv::Mat inputImage = cv::imread("input.jpg");
+	cv::Mat inputImage = cv::imread("3d.jpg");
 	cv::Mat outputImage(OUTPUT_HEIGHT, OUTPUT_WIDTH, CV_8UC3);
 
 	BlenderParams params;
@@ -101,54 +105,55 @@ void testCPU()
 	// 4. runImageBlender();
 	CBlenderWrapper* wrapper = new CBlenderWrapper;
 	wrapper->capabilityAssessment();
-	wrapper->getSingleInstance();
+	wrapper->getSingleInstance(3);
 	wrapper->initializeDevice();
-	wrapper->runImageBlender(params, CBlenderWrapper::PANORAMIC_BLENDER);
+	wrapper->runImageBlender(params, CBlenderWrapper::THREEDIMENSION_BLENDER);
 
 	cv::imshow("Blender Result", outputImage); 
-	cv::imwrite("BlenderResult_CPU.jpg", outputImage);
+	cv::imwrite("BlenderResult_CPU_3D.jpg", outputImage);
 
 	delete wrapper;
 }
 
-void convert()
+void convert(const char* path)
 {
 	cvNamedWindow("imagetest1", CV_WINDOW_AUTOSIZE);
 	IplImage* cvimg = 0;
-	Mat tempOutImage(1520, 3040, CV_8UC4);
+	Mat tempOutImage(2048, 4096, CV_8UC4);
 	IplImage* opencvImage = new IplImage(tempOutImage);
-	char rgbTmp[3];
-	cvimg = cvLoadImage("input.jpg", CV_LOAD_IMAGE_COLOR);
+	unsigned char rgbTmp[3];
+	cvimg = cvLoadImage(path, CV_LOAD_IMAGE_COLOR);
 
 	cvShowImage("imagetest1", cvimg);
 	for (int y = 0; y < cvimg->height; y++){
 		for (int x = 0; x < cvimg->width; x++) {
-			rgbTmp[0] = cvimg->imageData[cvimg->widthStep * y + x * 3];     // B  
-			rgbTmp[1] = cvimg->imageData[cvimg->widthStep * y + x * 3 + 1]; // G  
-			rgbTmp[2] = cvimg->imageData[cvimg->widthStep * y + x * 3 + 2]; // R  
-			//rgbTmp[0] = gray->imageData[cvimg->widthStep * y/3 + 640-x];     // B  
-			//rgbTmp[1] = gray->imageData[cvimg->widthStep * y/3 + 640-x];     // G  
-			//rgbTmp[2] = gray->imageData[cvimg->widthStep * y/3 + 640-x];     // R  
-			opencvImage->imageData[opencvImage->widthStep * y + x * 4] = rgbTmp[0];
-			opencvImage->imageData[opencvImage->widthStep * y + x * 4 + 1] = rgbTmp[1];
-			opencvImage->imageData[opencvImage->widthStep * y + x * 4 + 2] = rgbTmp[2];
-			opencvImage->imageData[opencvImage->widthStep * y + x * 4 + 3] = 255;
+			rgbTmp[0] = cvimg->imageData[cvimg->widthStep * y + x * 3];					 // B  
+			rgbTmp[1] = cvimg->imageData[cvimg->widthStep * y + x * 3 + 1];				 // G  
+			rgbTmp[2] = cvimg->imageData[cvimg->widthStep * y + x * 3 + 2];				 // R   
+
+			opencvImage->imageData[opencvImage->widthStep * y + x * 4] = rgbTmp[2];      // R
+			opencvImage->imageData[opencvImage->widthStep * y + x * 4 + 1] = rgbTmp[1];  // G
+			opencvImage->imageData[opencvImage->widthStep * y + x * 4 + 2] = rgbTmp[0];  // B
+			opencvImage->imageData[opencvImage->widthStep * y + x * 4 + 3] = 255;        // A
 		}
 	}
 	unsigned char *dataBackGround = (unsigned char *)malloc(sizeof(unsigned char)*opencvImage->imageSize);
 	memcpy(dataBackGround, opencvImage->imageData, opencvImage->imageSize);
 
-	FILE* file = fopen("output.dat", "wb");
+	FILE* file = fopen("3d.dat", "wb");
 	fwrite(dataBackGround, 1, opencvImage->imageSize, file);
 	fclose(file);
 
-	Mat outputImage(1520, 3040, CV_8UC4);
+	Mat outputImage(2048, 4096, CV_8UC4);
 	outputImage.data = dataBackGround;
 	imwrite("output.png", outputImage);
 }
 
 int main(void)
 {
-	testCUDA();
+	//convert("3d.jpg");
+	//testCPU();
+	testOpenCL();
+
 	return 0;
 }

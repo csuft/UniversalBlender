@@ -3,7 +3,7 @@
 #include "../utils/base64.h"
 #include <regex>
 
-CBaseBlender::CBaseBlender() : m_channels(0), m_blendWidth(0), m_leftMapData(nullptr), m_rightMapData(nullptr), m_unrollMap(nullptr),
+CBaseBlender::CBaseBlender() : m_channels(4), m_blendWidth(0), m_leftMapData(nullptr), m_rightMapData(nullptr), m_unrollMap(nullptr),
 m_inputHeight(0), m_inputWidth(0), m_outputWidth(0), m_outputHeight(0), m_paramsChanged(false), m_blenderType(1)
 {
 }
@@ -29,12 +29,14 @@ void CBaseBlender::setupBlender()
 		if (m_blenderType == 1) // panoramic blender
 		{
 			m_unrollMap->setOffset(m_offset);
+			m_unrollMap->init(m_inputWidth, m_inputHeight, m_outputWidth, m_outputHeight);
 		}
 		else  // 3d blender
 		{
 			m_unrollMap->setOffset(m_offset, 200.0f);
+			m_unrollMap->init(m_inputWidth, m_inputHeight, m_outputWidth, m_outputHeight, 3);
 		}
-		m_unrollMap->init(m_inputWidth, m_inputHeight, m_outputWidth, m_outputHeight, m_blenderType);
+		
 		m_leftMapData = m_unrollMap->getMap(0);
 		m_rightMapData = m_unrollMap->getMap(1);
 

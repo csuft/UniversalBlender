@@ -10,9 +10,9 @@ CCPUBlender::CCPUBlender() : CCPUBlender(4)
 
 CCPUBlender::CCPUBlender(int channels)
 {
-	if (channels != 3 || channels != 4)
+	if (channels != 3 && channels != 4)
 	{
-		channels = 3;
+		channels = 4;
 	}
 	m_channels = channels;
 	m_unrollMap = new UnrollMap;
