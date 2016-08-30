@@ -28,7 +28,6 @@ private:
 	unsigned int m_outputImageSize;
 	dim3 m_threadsPerBlock;
 	dim3 m_numBlocksBlend;
-	unsigned char* m_cudaInputBuffer;
 	unsigned char* m_cudaOutputBuffer;
 	cudaArray* m_cudaArray;
 	std::vector<float> m_alphaTable;

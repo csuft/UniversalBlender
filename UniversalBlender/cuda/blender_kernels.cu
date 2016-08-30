@@ -30,7 +30,16 @@ __global__ void mapFinishToBlender(int blend_width, int image_width, float *left
 	int index = y * image_width + x;
 	int left_start = image_width >> 2;
 	float *location = nullptr;
-
+	//  _______________________________________________________
+	// |             | | |                  | | |              |
+	// |             | | |                  | | |              |
+	// |             | | |                  | | |              |
+	// |	 MAP     | | |        MAP       | | |     MAP      |
+	// |             | | |                  | | |              |
+	// |             | | |                  | | |              |
+	// |_____________|_|_|__________________|_|_|______________|
+	//                1/4                    3/4
+	//            BLENDER_LEFT          BLENDER_RIGHT
 	if (x < left_start - blend_width)
 	{
 		location = left_map + index * 2;
@@ -105,7 +114,7 @@ BLEND_RIGHT:
 }
 //cuda  blender
 
-extern "C" cudaError_t cuFinishToBlender(cudaArray *inputBuffer, float *left_map, float*right_map, float* alpha_table, int image_width, int image_height, int bd_width, dim3 thread, dim3 numBlock, unsigned char *uOutBuffer)
+extern "C" cudaError_t cuFinishToBlender(cudaArray *inputBuffer, float *left_map, float*right_map, float* alpha_table, int image_width, int image_height, int bd_width, dim3 thread, dim3 numBlock, unsigned char *uOutBuffer, int type)
 {
 	cudaError_t ret = cudaSuccess;
 	tex.addressMode[0] = cudaAddressModeClamp;

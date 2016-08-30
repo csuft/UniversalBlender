@@ -19,11 +19,9 @@ class UNROLLMAP_API UnrollMap
 public:
 	UnrollMap();
 	~UnrollMap();
-	void setOffset(const std::string offset);
+	void setOffset(const std::string offset, float fov = 0);
 	void init(int inWidth, int inHeight, int outWidth, int outHeight, int type = 1);
-	float* getMapLeft();		
-	float* getMapRight();
-
+	float* getMap(int index);
 private:
 	UnrollMapImpl* unrollMapImpl;
 };

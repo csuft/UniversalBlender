@@ -327,13 +327,74 @@ void CCPUBlender::runBlender(unsigned char* input_data, unsigned char* output_da
 			threads[i].get();
 		}
 	}
-	else if (m_blenderType == 2)
-	{
-
-	}
 	else
 	{
+		memset(output_data, 0, m_outputWidth * m_outputHeight * m_channels * sizeof(unsigned char));
+		auto fun = [&](int yStart, int yEnd)
+		{
+			float Uf, Vf;
+			int U, V;
+			float ratioX, ratioY;
+			float ratio0, ratio1, ratio2, ratio3;
 
+			unsigned char* outImageData;
+			unsigned char* curOutImageData;
+			unsigned char* imageData;
+			unsigned char* imageDataNext;
+			float* mapData;
+			float* curMapData;
+			float ratio = 0;
+			for (int y = yStart; y < yEnd; y++)
+			{
+				int yIndex = y;
+				outImageData = output_data + yIndex * m_outputWidth * m_channels;
+				mapData = m_leftMapData + y * m_outputWidth * 2;
+				for (int x = 0; x < m_outputWidth; x++)
+				{
+					curMapData = mapData + 2 * x;
+					//查找map
+					Uf = curMapData[0];
+					Vf = curMapData[1];
+					if (Uf >= 0 && Vf >= 0)
+					{
+						//双线性插值
+						U = (int)Uf;
+						V = (int)Vf;
+						ratioX = 1 - Uf + U;
+						ratioY = 1 - Vf + V;
+						ratio0 = ratioX * ratioY;
+						ratio1 = ratioY - ratio0;
+						ratio2 = ratioX - ratio0;
+						ratio3 = 1 - ratioX - ratioY + ratio0;
+						imageData = input_data + (V * m_inputWidth + U) * m_channels;
+						imageDataNext = input_data + ((V + 1) * m_inputWidth + U) * m_channels;
+						curOutImageData = outImageData + m_channels * x;
+						for (int cn = 0; cn < m_channels; cn++)
+						{
+							curOutImageData[cn] = unsigned char(ratio0 * imageData[cn] +
+								ratio1 * imageData[m_channels + cn] +
+								ratio2 * imageDataNext[cn] +
+								ratio3 * imageDataNext[m_channels + cn] + 0.5f);
+						}
+					}
+				}
+			}
+		};
+		int threadNum = 8;
+		std::vector<std::future<void>> threads(threadNum);
+		int addHeight = m_outputHeight / threadNum;
+		//开启多线程
+		for (int i = 0; i < threadNum - 1; i++)
+		{
+			threads[i] = std::async(fun, i * addHeight, (i + 1) * addHeight);
+		}
+		threads[threadNum - 1] = std::async(fun, (threadNum - 1) * addHeight, m_outputHeight);
+
+		//等待多线程完成
+		for (int i = 0; i < threadNum; i++)
+		{
+			threads[i].get();
+		}
 	}
 }
 

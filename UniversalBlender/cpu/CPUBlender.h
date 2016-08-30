@@ -16,7 +16,6 @@ public:
 private:
 	unsigned char* addAlphaChannel(const unsigned char* inputImage);
 	unsigned char* removeAlphaChannel(const unsigned char* inputImage);
-
 };
 
 #endif

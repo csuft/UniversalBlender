@@ -1,13 +1,13 @@
 #include "CUDABlender.h"
 
-extern "C" cudaError_t cuFinishToBlender(cudaArray *inputBuffer, float *left_map, float*right_map, float* alpha_table, int image_width, int image_height, int bd_width, dim3 thread, dim3 numBlock, unsigned char *uOutBuffer);
+extern "C" cudaError_t cuFinishToBlender(cudaArray *inputBuffer, float *left_map, float*right_map, float* alpha_table, int image_width, int image_height, int bd_width, dim3 thread, dim3 numBlock, unsigned char *uOutBuffer, int type);
 
 CCUDABlender::CCUDABlender() : CCUDABlender(4)
 {
 	
 }
 
-CCUDABlender::CCUDABlender(int channels) : m_inputImageSize(0), m_outputImageSize(0), m_cudaInputBuffer(nullptr), m_cudaOutputBuffer(nullptr),
+CCUDABlender::CCUDABlender(int channels) : m_inputImageSize(0), m_outputImageSize(0), m_cudaOutputBuffer(nullptr),
 m_cudaAlphaTable(nullptr), m_cudaArray(nullptr), m_cudaLeftMapData(nullptr), m_cudaRightMapData(nullptr)
 {
 	m_unrollMap = new UnrollMap;
@@ -37,8 +37,8 @@ void CCUDABlender::setupBlender()
 		m_unrollMap = new UnrollMap;
 		m_unrollMap->setOffset(m_offset);
 		m_unrollMap->init(m_inputWidth, m_inputHeight, m_outputWidth, m_outputHeight, m_blenderType);
-		m_leftMapData = m_unrollMap->getMapLeft();
-		m_rightMapData = m_unrollMap->getMapRight();
+		m_leftMapData = m_unrollMap->getMap(0);
+		m_rightMapData = m_unrollMap->getMap(1);
 		m_paramsChanged = false;
 
 		if (m_blenderType == 1)
@@ -49,17 +49,17 @@ void CCUDABlender::setupBlender()
 			err = cudaMemcpy(m_cudaRightMapData, m_rightMapData, sizeof(float)*m_outputImageSize * 2, cudaMemcpyHostToDevice);
 
 			float alpha, lamda, gamma, a;
-			for (int i = 0; i < m_blendWidth * 2; i++)
+			for (unsigned int i = 0; i < m_blendWidth * 2; i++)
 			{
 				alpha = static_cast<float>(i) / (m_blendWidth * 2);
-				lamda = 5.2, gamma = 1.0, a = 0.5;
+				lamda = 5.2f, gamma = 1.0f, a = 0.5f;
 				if (alpha <= 0.5)
 				{
-					alpha = a*pow(2.0*alpha, lamda);
+					alpha = a*pow(2.0f*alpha, lamda);
 				}
 				else
 				{
-					alpha = 1.0 - (1.0 - a)*pow(2.0*(1.0 - alpha), lamda);
+					alpha = 1.0f - (1.0f - a)*pow(2.0f*(1.0f - alpha), lamda);
 				}
 				alpha = pow(alpha, gamma);
 				m_alphaTable.push_back(alpha);
@@ -78,7 +78,6 @@ void CCUDABlender::setupBlender()
 
 		}
 
-		err = cudaMalloc(&m_cudaInputBuffer, m_inputImageSize * m_channels * sizeof(unsigned char));
 		err = cudaMalloc(&m_cudaOutputBuffer, m_outputImageSize * m_channels * sizeof(unsigned char));
 
 		m_numBlocksBlend.x = m_outputWidth / m_threadsPerBlock.x;
@@ -94,21 +93,13 @@ void CCUDABlender::runBlender(unsigned char* input_data, unsigned char* output_d
 {
 	cudaError_t err = cudaSuccess;
 
-	if (m_blenderType == 1)
+	err = cudaMemcpyToArray(m_cudaArray, 0, 0, input_data, m_inputImageSize * m_channels * sizeof(unsigned char), cudaMemcpyHostToDevice);
+	err = cuFinishToBlender(m_cudaArray, m_cudaLeftMapData, m_cudaRightMapData, m_cudaAlphaTable, m_outputWidth, m_outputHeight, m_blendWidth, m_threadsPerBlock, m_numBlocksBlend, m_cudaOutputBuffer, m_blenderType);
+	err = cudaMemcpy(output_data, m_cudaOutputBuffer, m_outputImageSize * m_channels * sizeof(unsigned char), cudaMemcpyDeviceToHost);
+	if (err != cudaSuccess)
 	{
-		err = cudaMemcpyToArray(m_cudaArray, 0, 0, input_data, m_inputImageSize * m_channels * sizeof(unsigned char), cudaMemcpyHostToDevice);
-		err = cuFinishToBlender(m_cudaArray, m_cudaLeftMapData, m_cudaRightMapData, m_cudaAlphaTable, m_outputWidth, m_outputHeight, m_blendWidth, m_threadsPerBlock, m_numBlocksBlend, m_cudaOutputBuffer);
-		err = cudaMemcpy(output_data, m_cudaOutputBuffer, m_outputImageSize * m_channels * sizeof(unsigned char), cudaMemcpyDeviceToHost);
+		LOGERR("Error ocurred while blending...Code: %d", err);
 	}
-	else if (m_blenderType == 2)
-	{
-
-	}
-	else
-	{
-
-	}
-
 }
 
 void CCUDABlender::destroyBlender()
@@ -123,12 +114,6 @@ void CCUDABlender::destroyBlender()
 	{
 		cudaFree(m_cudaRightMapData);
 		m_cudaRightMapData = nullptr;
-	}
-
-	if (nullptr != m_cudaInputBuffer)
-	{
-		cudaFree(m_cudaInputBuffer);
-		m_cudaInputBuffer = nullptr;
 	}
 
 	if (nullptr != m_cudaOutputBuffer)
@@ -198,7 +183,7 @@ bool CCUDABlender::initializeDevice()
 		return false;
 	}
 
-	size_t index;
+	int index;
 	cudaDeviceProp props;
 	for (index = 0; index < count; index++)
 	{
@@ -207,24 +192,6 @@ bool CCUDABlender::initializeDevice()
 			// 只要找到一个Compute Capability >= 1的设备就行
 			if (props.major >= 1)
 			{
-				LOGINFO("CUDA Device Info:\nName: \t\t\t\t%s\nTotalGlobalMem:\t\t%uMB\nSharedMemPerBlock:\t%dKB\nRegsPerBlock:\t\t%d\nwarpSize:\t\t\t%d\nmemPitch:\t\t\t%d\nMaxThreadPerBlock:\t%d\nMaxThreadsDim:\t\tx = %d, y = %d,z =%d\nMaxGridSize: \t\tx = %d,y = %d,z = %d\nTotalConstMem:\t\t%d\nmajor:\t\t\t\t%d\nminor:\t\t\t\t5d\nTextureAlignment:\t%d\t",
-					props.name,
-					props.totalGlobalMem / (1024 * 1024),
-					props.sharedMemPerBlock / 1024,
-					props.regsPerBlock,
-					props.warpSize,
-					props.memPitch,
-					props.maxThreadsPerBlock,
-					props.maxThreadsDim[0],
-					props.maxThreadsDim[1],
-					props.maxThreadsDim[2],
-					props.maxGridSize[0],
-					props.maxGridSize[1],
-					props.maxGridSize[2],
-					(int)props.totalConstMem,
-					props.major,
-					props.minor,
-					(int)props.textureAlignment);
 				break;
 			}
 		}
