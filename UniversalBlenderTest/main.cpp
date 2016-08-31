@@ -14,6 +14,44 @@
 
 using namespace cv;
 
+void RGB2RGBA(unsigned char* rgba, unsigned char* rgb, int imageSize)
+{
+	if (rgba == nullptr || rgb == nullptr || imageSize <= 0)
+	{
+		return;
+	}
+	int rgbIndex = 0;
+	int rgbaIndex = 0;
+
+	while (rgbIndex < imageSize) { 
+		rgba[rgbaIndex] = rgb[rgbIndex];
+		rgba[rgbaIndex + 1] = rgb[rgbIndex + 1];
+		rgba[rgbaIndex + 2] = rgb[rgbIndex + 2];
+		rgba[rgbaIndex + 3] = 255;
+		rgbIndex += 3;
+		rgbaIndex += 4;
+	}
+}
+
+void RGBA2RGB(unsigned char* rgb, unsigned char* rgba, int imageSize)
+{
+	if (rgba == nullptr || rgb == nullptr || imageSize <= 0)
+	{
+		return;
+	}
+
+	int rgbIndex = 0;
+	int rgbaIndex = 0;
+
+	while (rgbaIndex < imageSize) {
+		rgb[rgbIndex] = rgba[rgbaIndex];
+		rgb[rgbIndex + 1] = rgba[rgbaIndex + 1];
+		rgb[rgbIndex + 2] = rgba[rgbaIndex + 2];
+
+		rgbIndex += 3;
+		rgbaIndex += 4;
+	}
+}
 
 void testCUDA()
 {
@@ -115,6 +153,38 @@ void testCPU()
 	delete wrapper;
 }
 
+void test_RGBA2RGB()
+{
+	unsigned char* inputImage = new unsigned char[4 * INPUT_WIDTH * INPUT_HEIGHT];
+	unsigned char* outputImage = new unsigned char[3 * INPUT_WIDTH * INPUT_HEIGHT];
+	FILE* infile = fopen("original_rgba.dat", "rb");
+	fread(inputImage, 1, 4 * INPUT_WIDTH*INPUT_HEIGHT, infile);
+	fclose(infile);
+
+	RGBA2RGB(outputImage, inputImage, 4*INPUT_WIDTH*INPUT_HEIGHT);
+
+	FILE* outfile = fopen("transformed_rgb.dat", "wb");
+	fwrite(outputImage, 1, 3 * INPUT_WIDTH*INPUT_HEIGHT, outfile);
+	fclose(outfile);
+	 
+}
+
+void test_RGB2RGBA()
+{
+	unsigned char* inputImage = new unsigned char[3 * INPUT_WIDTH * INPUT_HEIGHT];
+	unsigned char* outputImage = new unsigned char[4 * INPUT_WIDTH * INPUT_HEIGHT];
+	FILE* infile = fopen("transformed_rgb.dat", "rb");
+	fread(inputImage, 1, 3 * INPUT_WIDTH*INPUT_HEIGHT, infile);
+	fclose(infile);
+
+	RGB2RGBA(outputImage, inputImage, 3 * INPUT_WIDTH*INPUT_HEIGHT);
+
+	FILE* outfile = fopen("transformed_rgba.dat", "wb");
+	fwrite(outputImage, 1, 4 * INPUT_WIDTH*INPUT_HEIGHT, outfile);
+	fclose(outfile);
+
+}
+
 void convert(const char* path)
 {
 	cvNamedWindow("imagetest1", CV_WINDOW_AUTOSIZE);
@@ -153,8 +223,10 @@ int main(void)
 {
 	//convert("3d.jpg");
 	//testCPU();
-	testOpenCL();
+	//testOpenCL();
 	//testCUDA();
+	//test_RGBA2RGB();
+	test_RGB2RGBA();
 
 	return 0;
 }

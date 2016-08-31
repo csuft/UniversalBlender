@@ -1,6 +1,7 @@
 #include "CUDABlender.h"
+#include <thrust/equal.h>
 
-extern "C" cudaError_t cuFinishToBlender(cudaArray *inputBuffer, float *left_map, float*right_map, float* alpha_table, int image_width, int image_height, int bd_width, dim3 thread, dim3 numBlock, unsigned char *uOutBuffer, int type);
+extern "C" cudaError_t fishEyeBlender(cudaArray *inputBuffer, float *left_map, float*right_map, float* alpha_table, int image_width, int image_height, int bd_width, dim3 thread, dim3 numBlock, unsigned char *uOutBuffer, int type);
 
 CCUDABlender::CCUDABlender() : CCUDABlender(4)
 {
@@ -83,7 +84,7 @@ void CCUDABlender::runBlender(unsigned char* input_data, unsigned char* output_d
 	cudaError_t err = cudaSuccess;
 
 	err = cudaMemcpyToArray(m_cudaArray, 0, 0, input_data, m_inputImageSize * m_channels * sizeof(unsigned char), cudaMemcpyHostToDevice);
-	err = cuFinishToBlender(m_cudaArray, m_cudaLeftMapData, m_cudaRightMapData, m_cudaAlphaTable, m_outputWidth, m_outputHeight, m_blendWidth, m_threadsPerBlock, m_numBlocksBlend, m_cudaOutputBuffer, m_blenderType);
+	err = fishEyeBlender(m_cudaArray, m_cudaLeftMapData, m_cudaRightMapData, m_cudaAlphaTable, m_outputWidth, m_outputHeight, m_blendWidth, m_threadsPerBlock, m_numBlocksBlend, m_cudaOutputBuffer, m_blenderType);
 	err = cudaMemcpy(output_data, m_cudaOutputBuffer, m_outputImageSize * m_channels * sizeof(unsigned char), cudaMemcpyDeviceToHost);
 	if (err != cudaSuccess)
 	{

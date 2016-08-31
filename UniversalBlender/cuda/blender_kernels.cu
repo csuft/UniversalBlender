@@ -152,7 +152,7 @@ BLEND_RIGHT:
 }
 //cuda  blender
 
-extern "C" cudaError_t cuFinishToBlender(cudaArray *inputBuffer, float *left_map, float*right_map, float* alpha_table, int image_width, int image_height, int bd_width, dim3 thread, dim3 numBlock, unsigned char *uOutBuffer, int type)
+extern "C" cudaError_t fishEyeBlender(cudaArray *inputBuffer, float *left_map, float*right_map, float* alpha_table, int image_width, int image_height, int bd_width, dim3 thread, dim3 numBlock, unsigned char *uOutBuffer, int type)
 {
 	cudaError_t ret = cudaSuccess;
 	tex.addressMode[0] = cudaAddressModeClamp;
@@ -173,16 +173,4 @@ extern "C" cudaError_t cuFinishToBlender(cudaArray *inputBuffer, float *left_map
 
 	return ret;
 
-}
-
-// Convert RGB(BGR) to RGBA(BGRA)
-__global__ void add_alpha_channel(unsigned char* input, unsigned char* output)
-{
-
-}
-
-// Convert RGBA(BGRA) to RGB(BGR)
-__global__ void remove_alpha_channel(unsigned char* input, unsigned char* output)
-{
-
-}
+} 
