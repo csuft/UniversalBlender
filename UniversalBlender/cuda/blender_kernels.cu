@@ -28,24 +28,36 @@ __global__ void threeDBlender(int image_width, int image_height, float *left_map
 	int x = (blockIdx.x * blockDim.x) + threadIdx.x;
 	int y = (blockIdx.y * blockDim.y) + threadIdx.y;
 	int index = y * image_width + x;
-	int pivot = image_width / 2;
-	float ratio = 0.0f;
+	int pivot = image_width / 2;  
 	float* location = nullptr;
 
 	if (x < pivot)
 	{
-		location = left_map + index * 2;
+		location = left_map + (index + pivot)* 2;
 	}
 	else
 	{
-		location = right_map + index * 2;
+		location = left_map + (index - pivot) * 2;
 	}
-	float4 val = tex2D(tex, location[0], location[1]);
-	out_img[4 * index + 0] = val.x * 255;
-	out_img[4 * index + 1] = val.y * 255;
-	out_img[4 * index + 2] = val.z * 255;
-	out_img[4 * index + 3] = 255;
+	// 左右半圆形设置为黑色
+	int tempX = (int)location[0];
+	int tempY = (int)location[1];
+	if (tempX == -1 && tempY == -1)
+	{
+		out_img[4 * index + 0] = 0;
+		out_img[4 * index + 1] = 0;
+		out_img[4 * index + 2] = 0;
+		out_img[4 * index + 3] = 255;
+	}
+	else
+	{
+		float4 val = tex2D(tex, location[0], location[1]);
 
+		out_img[4 * index + 0] = val.x * 255;
+		out_img[4 * index + 1] = val.y * 255;
+		out_img[4 * index + 2] = val.z * 255;
+		out_img[4 * index + 3] = 255;
+	}
 }
 
 // kernel function for panoramic blender

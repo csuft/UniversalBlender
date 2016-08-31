@@ -153,8 +153,8 @@ int main(void)
 {
 	//convert("3d.jpg");
 	//testCPU();
-	//testOpenCL();
-	testCUDA();
+	testOpenCL();
+	//testCUDA();
 
 	return 0;
 }
