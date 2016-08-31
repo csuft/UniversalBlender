@@ -22,8 +22,34 @@ cudaError_t checkError(cudaError_t ret) {
 
 texture<uchar4, cudaTextureType2D, cudaReadModeNormalizedFloat> tex;
 
-//kernel function
-__global__ void mapFinishToBlender(int blend_width, int image_width, float *left_map, float *right_map, float *alpha_table, unsigned char *out_img)
+// kernel function for 3d blender 
+__global__ void threeDBlender(int image_width, int image_height, float *left_map, float *right_map, unsigned char *out_img)
+{
+	int x = (blockIdx.x * blockDim.x) + threadIdx.x;
+	int y = (blockIdx.y * blockDim.y) + threadIdx.y;
+	int index = y * image_width + x;
+	int pivot = image_width / 2;
+	float ratio = 0.0f;
+	float* location = nullptr;
+
+	if (x < pivot)
+	{
+		location = left_map + index * 2;
+	}
+	else
+	{
+		location = right_map + index * 2;
+	}
+	float4 val = tex2D(tex, location[0], location[1]);
+	out_img[4 * index + 0] = val.x * 255;
+	out_img[4 * index + 1] = val.y * 255;
+	out_img[4 * index + 2] = val.z * 255;
+	out_img[4 * index + 3] = 255;
+
+}
+
+// kernel function for panoramic blender
+__global__ void panoramicBlender(int blend_width, int image_width, float *left_map, float *right_map, float *alpha_table, unsigned char *out_img)
 {
 	int x = (blockIdx.x * blockDim.x) + threadIdx.x;
 	int y = (blockIdx.y * blockDim.y) + threadIdx.y;
@@ -123,7 +149,15 @@ extern "C" cudaError_t cuFinishToBlender(cudaArray *inputBuffer, float *left_map
 	tex.filterMode = cudaFilterModeLinear;
 
 	checkError(cudaBindTextureToArray(tex, inputBuffer));
-	mapFinishToBlender <<<numBlock, thread >>>(bd_width, image_width, left_map, right_map, alpha_table, uOutBuffer);
+	
+	if (type == 1)
+	{
+		panoramicBlender << <numBlock, thread >> >(bd_width, image_width, left_map, right_map, alpha_table, uOutBuffer);
+	}
+	else
+	{
+		threeDBlender << <numBlock, thread >> >(image_width, image_height, left_map, right_map, uOutBuffer);
+	}
 
 	return ret;
 

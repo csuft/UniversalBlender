@@ -19,7 +19,7 @@ void testCUDA()
 {
 	std::string offset = "2_748.791_759.200_758.990_0.000_0.000_90.000_742.211_2266.919_750.350_-0.300_0.100_90.030_3040_1520_1026";
 	unsigned char* inputImage = new unsigned char[4 * INPUT_WIDTH* INPUT_HEIGHT];
-	FILE* file = fopen("output.dat", "rb");
+	FILE* file = fopen("3d.dat", "rb");
 	fread(inputImage, 1, 4 * INPUT_WIDTH * INPUT_HEIGHT, file);
 	fclose(file);
 	cv::Mat outputImage(OUTPUT_HEIGHT, OUTPUT_WIDTH, CV_8UC4);
@@ -41,10 +41,10 @@ void testCUDA()
 	wrapper->capabilityAssessment();
 	wrapper->getSingleInstance(4);
 	wrapper->initializeDevice();
-	wrapper->runImageBlender(params, CBlenderWrapper::PANORAMIC_BLENDER);
+	wrapper->runImageBlender(params, CBlenderWrapper::THREEDIMENSION_BLENDER);
 
 	cv::imshow("Blender Result", outputImage);
-	cv::imwrite("BlenderResult_CUDA.jpg", outputImage);
+	cv::imwrite("BlenderResult_CUDA_3D.jpg", outputImage);
 
 	delete wrapper;
 }
@@ -153,7 +153,8 @@ int main(void)
 {
 	//convert("3d.jpg");
 	//testCPU();
-	testOpenCL();
+	//testOpenCL();
+	testCUDA();
 
 	return 0;
 }
