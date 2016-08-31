@@ -13,7 +13,7 @@ m_inputParamsBuffer(nullptr), m_leftMapBuffer(nullptr), m_rightMapBuffer(nullptr
 	memset(m_origins, 0, sizeof(int)* 3);
 	memset(m_inputParams, 0, sizeof(int)* 16);
 	m_unrollMap = new UnrollMap;
-	if (channels != 3 || channels != 4)
+	if (channels != 3 && channels != 4)
 	{
 		channels = 4;
 	}
@@ -54,27 +54,15 @@ void COpenCLBlender::runBlender(unsigned char* input_data, unsigned char* output
 {
 	cl_int err;
 	cl::Event event;
-	if (m_blenderType == 1)
-	{
-		// Step 8: Run the kernels
-		// parameters need to be fixed.
-		err = m_commandQueue->enqueueWriteImage(*m_inputImage, CL_TRUE, m_origins, m_inputRegions, 0, 0, input_data, nullptr, &event);
-		err = m_commandQueue->enqueueNDRangeKernel(*m_kernel, cl::NullRange, cl::NDRange(m_outputWidth, m_outputHeight), cl::NDRange(16, 16), nullptr, &event);
-		checkError(err, "CommandQueue::enqueueNDRangeKernel()");
-		event.wait();
-		err = m_commandQueue->enqueueReadImage(*m_outputImage, CL_TRUE, m_origins, m_outputRegions, 0, 0, output_data, 0, &event);
-		checkError(err, "CommandQueue::enqueueReadImage()");
-		CL_INVALID_MEM_OBJECT;
-	}
-	else if (m_blenderType == 2)
-	{
 
-	}
-	else
-	{
-
-	} 
-	
+	// Step 8: Run the kernels
+	// parameters need to be fixed.
+	err = m_commandQueue->enqueueWriteImage(*m_inputImage, CL_TRUE, m_origins, m_inputRegions, 0, 0, input_data, nullptr, &event);
+	err = m_commandQueue->enqueueNDRangeKernel(*m_kernel, cl::NullRange, cl::NDRange(m_outputWidth, m_outputHeight), cl::NDRange(16, 16), nullptr, &event);
+	checkError(err, "CommandQueue::enqueueNDRangeKernel()");
+	event.wait();
+	err = m_commandQueue->enqueueReadImage(*m_outputImage, CL_TRUE, m_origins, m_outputRegions, 0, 0, output_data, 0, &event);
+	checkError(err, "CommandQueue::enqueueReadImage()");
 }
 
 void COpenCLBlender::destroyBlender()
@@ -136,35 +124,24 @@ void COpenCLBlender::setupBlender()
 		destroyBlender();
 		m_unrollMap = new UnrollMap;
 		m_unrollMap->setOffset(m_offset);
-		m_unrollMap->init(m_inputWidth, m_inputHeight, m_outputWidth, m_outputHeight, m_blenderType);
-		m_leftMapData = m_unrollMap->getMapLeft();
-		m_rightMapData = m_unrollMap->getMapRight();
+		m_unrollMap->init(m_inputWidth, m_inputHeight, m_outputWidth, m_outputHeight, 1);
+		m_leftMapData = m_unrollMap->getMap(0);
+		m_rightMapData = m_unrollMap->getMap(1);
 		m_paramsChanged = false;
 
 		// Step 7: Create buffers for kernels
 		cl_channel_order image_channel_order = m_channels > 3 ? CL_RGBA : CL_RGB;
 		cl_channel_type image_channel_data_type = m_channels > 3 ? CL_UNORM_INT8 : CL_UNORM_SHORT_565;
 
-		if (m_blenderType == 1)
-		{
-			cl::ImageFormat image_format(image_channel_order, image_channel_data_type);
-			m_inputBuffer = new unsigned char[m_inputImageSize * m_channels];
-			m_inputImage = new cl::Image2D(*m_openclContext, CL_MEM_USE_HOST_PTR, image_format, m_inputWidth, m_inputHeight, 0, m_inputBuffer, &err);
-			m_outputBuffer = new unsigned char[m_outputImageSize * m_channels];
-			m_outputImage = new cl::Image2D(*m_openclContext, CL_MEM_USE_HOST_PTR, image_format, m_outputWidth, m_outputHeight, 0, m_outputBuffer, &err);
-			m_inputParamsBuffer = new cl::Buffer(*m_openclContext, CL_MEM_COPY_HOST_PTR, sizeof(int)* 16, m_inputParams, &err);
-			m_leftMapBuffer = new cl::Buffer(*m_openclContext, CL_MEM_COPY_HOST_PTR, sizeof(float)*m_outputImageSize * 2, m_leftMapData, &err);
-			m_rightMapBuffer = new cl::Buffer(*m_openclContext, CL_MEM_USE_HOST_PTR, sizeof(float)*m_outputImageSize * 2, m_rightMapData, &err);
-		}
-		else if (m_blenderType == 2)
-		{
+		cl::ImageFormat image_format(image_channel_order, image_channel_data_type);
+		m_inputBuffer = new unsigned char[m_inputImageSize * m_channels];
+		m_inputImage = new cl::Image2D(*m_openclContext, CL_MEM_USE_HOST_PTR, image_format, m_inputWidth, m_inputHeight, 0, m_inputBuffer, &err);
+		m_outputBuffer = new unsigned char[m_outputImageSize * m_channels];
+		m_outputImage = new cl::Image2D(*m_openclContext, CL_MEM_USE_HOST_PTR, image_format, m_outputWidth, m_outputHeight, 0, m_outputBuffer, &err);
+		m_inputParamsBuffer = new cl::Buffer(*m_openclContext, CL_MEM_COPY_HOST_PTR, sizeof(int)* 16, m_inputParams, &err);
+		m_leftMapBuffer = new cl::Buffer(*m_openclContext, CL_MEM_COPY_HOST_PTR, sizeof(float)*m_outputImageSize * 2, m_leftMapData, &err);
+		m_rightMapBuffer = new cl::Buffer(*m_openclContext, CL_MEM_USE_HOST_PTR, sizeof(float)*m_outputImageSize * 2, m_rightMapData, &err);
 
-		}
-		else
-		{
-
-		}
-		 
 		err = m_kernel->setArg(0, *m_inputImage);
 		err |= m_kernel->setArg(1, *m_outputImage);
 		err |= m_kernel->setArg(2, *m_leftMapBuffer);
@@ -172,6 +149,7 @@ void COpenCLBlender::setupBlender()
 		err |= m_kernel->setArg(4, *m_inputParamsBuffer);
 		err |= m_kernel->setArg(5, m_widthFactor);
 		err |= m_kernel->setArg(6, m_heightFactor);
+		err |= m_kernel->setArg(7, m_blenderType);
 		checkError(err, "Kernel::setArg()");
 	}
 }
@@ -208,18 +186,15 @@ bool COpenCLBlender::setParams(const unsigned int iw, const unsigned int ih, con
 		m_outputRegions[1] = m_outputHeight;
 		m_outputRegions[2] = 1;
 
-		m_widthFactor = 1.0 / m_inputWidth;
-		m_heightFactor = 1.0 / m_inputHeight;
+		m_widthFactor = 1.0f / m_inputWidth;
+		m_heightFactor = 1.0f / m_inputHeight;
 
-		if (type == 1)
-		{
-			int blenderWidth = 5 * m_outputWidth / 360;
-			m_inputParams[0] = (m_outputWidth >> 2) - (blenderWidth >> 1);
-			m_inputParams[1] = m_inputParams[0] + blenderWidth;
-			m_inputParams[2] = (m_outputWidth * 3 / 4) - (blenderWidth >> 1);
-			m_inputParams[3] = m_inputParams[2] + blenderWidth;
-			m_inputParams[4] = m_outputWidth * 2;
-		}
+		int blenderWidth = 5 * m_outputWidth / 360;
+		m_inputParams[0] = (m_outputWidth >> 2) - (blenderWidth >> 1);      // Left Blender Start
+		m_inputParams[1] = m_inputParams[0] + blenderWidth;					// Left Blender End
+		m_inputParams[2] = (m_outputWidth * 3 / 4) - (blenderWidth >> 1);   // Right Blender Start
+		m_inputParams[3] = m_inputParams[2] + blenderWidth;                 // Right Blender End
+		m_inputParams[4] = m_outputWidth * 2;
 
 		// To indicate the parameters have changed.
 		m_paramsChanged = true;
@@ -237,21 +212,6 @@ void COpenCLBlender::initializeDevice()
 	cl::Platform::get(&platformList);
 	checkError(platformList.size() != 0 ? CL_SUCCESS : -1, "cl::Platform::get");
 	LOGINFO("Platform number is: \t\t%d", platformList.size());
-	// Output the platform information.
-	std::string platformVendor;
-	for (int i = 0; i < platformList.size(); ++i)
-	{
-		platformList[i].getInfo((cl_platform_info)CL_PLATFORM_VENDOR, &platformVendor);
-		LOGINFO("Platform is by: \t\t\t%s", platformVendor.c_str());
-		platformList[i].getInfo((cl_platform_info)CL_PLATFORM_EXTENSIONS, &platformVendor);
-		LOGINFO("Platform extension: \t\t%s", platformVendor.c_str());
-		platformList[i].getInfo((cl_platform_info)CL_PLATFORM_NAME, &platformVendor);
-		LOGINFO("Platform name: \t\t\t%s", platformVendor.c_str());
-		platformList[i].getInfo((cl_platform_info)CL_PLATFORM_PROFILE, &platformVendor);
-		LOGINFO("Platform profile: \t\t%s", platformVendor.c_str());
-		platformList[i].getInfo((cl_platform_info)CL_PLATFORM_VERSION, &platformVendor);
-		LOGINFO("Platform version: \t\t%s", platformVendor.c_str());
-	}
 
 	// Step 2: Create context for specific device type.
 	cl_context_properties cprops[3] = { CL_CONTEXT_PLATFORM, (cl_context_properties)(platformList[0])(), 0 };
@@ -278,11 +238,73 @@ void COpenCLBlender::initializeDevice()
 	checkError(err, "CommandQueue::CommandQueue()"); 
 }
 
-inline bool COpenCLBlender::checkError(cl_int err, const char* name)
+bool COpenCLBlender::checkError(cl_int err, const char* name)
 {
+
+	static std::hash_map<int, std::string> errorCodesMap;
+	errorCodesMap[0] = "CL_SUCCESS";
+	errorCodesMap[-1] = "CL_DEVICE_NOT_FOUND";
+	errorCodesMap[-2] = "CL_DEVICE_NOT_AVAILABLE";
+	errorCodesMap[-3] = "CL_COMPILER_NOT_AVAILABLE";
+	errorCodesMap[-4] = "CL_MEM_OBJECT_ALLOCATION_FAILURE";
+	errorCodesMap[-5] = "CL_OUT_OF_RESOURCES";
+	errorCodesMap[-6] = "CL_OUT_OF_HOST_MEMORY";
+	errorCodesMap[-7] = "CL_PROFILING_INFO_NOT_AVAILABLE";
+	errorCodesMap[-8] = "CL_MEM_COPY_OVERLAP";
+	errorCodesMap[-9] = "CL_IMAGE_FORMAT_MISMATCH";
+	errorCodesMap[-10] = "CL_IMAGE_FORMAT_NOT_SUPPORTED";
+	errorCodesMap[-11] = "CL_BUILD_PROGRAM_FAILURE";
+	errorCodesMap[-12] = "CL_MAP_FAILURE";
+	errorCodesMap[-13] = "CL_MISALIGNED_SUB_BUFFER_OFFSET";
+	errorCodesMap[-14] = "CL_EXEC_STATUS_ERROR_FOR_EVENTS_IN_WAIT_LIST";
+	errorCodesMap[-15] = "CL_COMPILE_PROGRAM_FAILURE";
+	errorCodesMap[-16] = "CL_LINKER_NOT_AVAILABLE";
+	errorCodesMap[-17] = "CL_LINK_PROGRAM_FAILURE";
+	errorCodesMap[-18] = "CL_DEVICE_PARTITION_FAILED";
+	errorCodesMap[-19] = "CL_KERNEL_ARG_INFO_NOT_AVAILABLE";
+	errorCodesMap[-30] = "CL_INVALID_VALUE";
+	errorCodesMap[-31] = "CL_INVALID_DEVICE_TYPE";
+	errorCodesMap[-32] = "CL_INVALID_PLATFORM";
+	errorCodesMap[-33] = "CL_INVALID_DEVICE";
+	errorCodesMap[-34] = "CL_INVALID_CONTEXT";
+	errorCodesMap[-35] = "CL_INVALID_QUEUE_PROPERTIES";
+	errorCodesMap[-36] = "CL_INVALID_COMMAND_QUEUE";
+	errorCodesMap[-37] = "CL_INVALID_HOST_PTR";
+	errorCodesMap[-38] = "CL_INVALID_MEM_OBJECT";
+	errorCodesMap[-39] = "CL_INVALID_IMAGE_FORMAT_DESCRIPTOR";
+	errorCodesMap[-40] = "CL_INVALID_IMAGE_SIZE";
+	errorCodesMap[-41] = "CL_INVALID_SAMPLER";
+	errorCodesMap[-42] = "CL_INVALID_BINARY";
+	errorCodesMap[-43] = "CL_INVALID_BUILD_OPTIONS";
+	errorCodesMap[-44] = "CL_INVALID_PROGRAM";
+	errorCodesMap[-45] = "CL_INVALID_PROGRAM_EXECUTABLE";
+	errorCodesMap[-46] = "CL_INVALID_KERNEL_NAME";
+	errorCodesMap[-47] = "CL_INVALID_KERNEL_DEFINITION";
+	errorCodesMap[-48] = "CL_INVALID_KERNEL";
+	errorCodesMap[-49] = "CL_INVALID_ARG_INDEX";
+	errorCodesMap[-50] = "CL_INVALID_ARG_VALUE";
+	errorCodesMap[-51] = "CL_INVALID_ARG_SIZE";
+	errorCodesMap[-52] = "CL_INVALID_KERNEL_ARGS";
+	errorCodesMap[-53] = "CL_INVALID_WORK_DIMENSION";
+	errorCodesMap[-54] = "CL_INVALID_WORK_GROUP_SIZE";
+	errorCodesMap[-55] = "CL_INVALID_WORK_ITEM_SIZE";
+	errorCodesMap[-56] = "CL_INVALID_GLOBAL_OFFSET";
+	errorCodesMap[-57] = "CL_INVALID_EVENT_WAIT_LIST";
+	errorCodesMap[-58] = "CL_INVALID_EVENT";
+	errorCodesMap[-59] = "CL_INVALID_OPERATION";
+	errorCodesMap[-60] = "CL_INVALID_GL_OBJECT";
+	errorCodesMap[-61] = "CL_INVALID_BUFFER_SIZE";
+	errorCodesMap[-62] = "CL_INVALID_MIP_LEVEL";
+	errorCodesMap[-63] = "CL_INVALID_GLOBAL_WORK_SIZE";
+	errorCodesMap[-64] = "CL_INVALID_PROPERTY";
+	errorCodesMap[-65] = "CL_INVALID_IMAGE_DESCRIPTOR";
+	errorCodesMap[-66] = "CL_INVALID_COMPILER_OPTIONS";
+	errorCodesMap[-67] = "CL_INVALID_LINKER_OPTIONS";
+	errorCodesMap[-68] = "CL_INVALID_DEVICE_PARTITION_COUNT";
+
 	if (err != CL_SUCCESS)
 	{
-		LOGERR("Error: %s, Code: %d", name, err);
+		LOGERR("Error: %s, Code: [%s]", name, errorCodesMap[err].c_str());
 		return false;
 	}
 
