@@ -140,7 +140,7 @@ bool CBlenderWrapper::isSupportOpenCL()
 }
 
 // Implement singleton pattern using C++11 low level ordering constraints.
-void CBlenderWrapper::getSingleInstance(int channels)
+void CBlenderWrapper::getSingleInstance(COLOR_MODE mode)
 {
 	CBaseBlender* temp = m_blender.load(std::memory_order_acquire);
 	if (temp == nullptr)
@@ -151,23 +151,22 @@ void CBlenderWrapper::getSingleInstance(int channels)
 		{
 			if (CUDA_BLENDER == m_deviceType)
 			{
-				temp = new CCUDABlender(channels);
+				temp = new CCUDABlender(mode);
 				LOGINFO("CUDA instance address: %p", temp);
 			}
 			else if (OPENCL_BLENDER == m_deviceType)
 			{
-				temp = new COpenCLBlender(channels);
+				temp = new COpenCLBlender(mode);
 				LOGINFO("OpenCL instance address: %p", temp);
 			}
 			else
 			{
-				temp = new CCPUBlender(channels);
+				temp = new CCPUBlender(mode);
 				LOGINFO("CPU instance address: %p", temp);
 			}
 			m_blender.store(temp, std::memory_order_release);
 		}
-	}
-	LOGINFO("Instance address: %p", temp);
+	} 
 }
 
 void CBlenderWrapper::initializeDevice()

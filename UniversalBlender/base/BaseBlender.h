@@ -22,10 +22,11 @@ protected:
 	std::string trimOffset(std::string offset);
 	void splitOffset(std::string& s, char delim, std::vector< std::string >& ret);
 	bool isOffsetValid(std::string& _offset);
+	void RGBA2RGB(unsigned char* rgb, unsigned char* rgba, int imageSize);
+	void RGB2RGBA(unsigned char* rgba, unsigned char* rgb, int imageSize);
 
 protected:
-	UnrollMap* m_unrollMap;
-	// color model: RGB(RGBA)
+	UnrollMap* m_unrollMap;  
 	unsigned int m_channels;
 	float* m_leftMapData;
 	float* m_rightMapData;
@@ -38,7 +39,8 @@ protected:
 	// 1:双鱼眼全景展开map， 2:180度3d展开map， 3：双鱼眼全景展开map，且都位于中间
 	int m_blenderType;
 	// 表征参数是否发生改变，如果发生改变则需要重新初始化Map实例
-	bool m_paramsChanged;
+	bool m_paramsChanged; 
+	int m_colorMode;
 };
 
 #endif

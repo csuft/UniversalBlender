@@ -13,7 +13,7 @@ class CCUDABlender : public CBaseBlender
 {
 public:
 	CCUDABlender();
-	CCUDABlender(int channels);
+	CCUDABlender(int mode);
 	~CCUDABlender();
 
 	bool initializeDevice();

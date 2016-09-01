@@ -1,23 +1,20 @@
 #include "OpenCLBlender.h"
 
 
-COpenCLBlender::COpenCLBlender() : COpenCLBlender(4)
+COpenCLBlender::COpenCLBlender() : COpenCLBlender(2)
 {
 
 }
 
-COpenCLBlender::COpenCLBlender(int channels) : m_inputImageSize(0), m_outputImageSize(0), m_heightFactor(0), m_widthFactor(0),
+COpenCLBlender::COpenCLBlender(int mode) : m_inputImageSize(0), m_outputImageSize(0), m_heightFactor(0), m_widthFactor(0),
 m_inputBuffer(nullptr), m_outputBuffer(nullptr), m_openclContext(nullptr), m_program(nullptr), m_inputImage(nullptr), m_outputImage(nullptr),
 m_inputParamsBuffer(nullptr), m_leftMapBuffer(nullptr), m_rightMapBuffer(nullptr), m_commandQueue(nullptr), m_kernel(nullptr)
 {
 	memset(m_origins, 0, sizeof(int)* 3);
 	memset(m_inputParams, 0, sizeof(int)* 16);
 	m_unrollMap = new UnrollMap;
-	if (channels != 3 && channels != 4)
-	{
-		channels = 4;
-	}
-	m_channels = channels;
+	m_colorMode = mode;
+	m_channels = 4;
 }
 
 
@@ -55,14 +52,60 @@ void COpenCLBlender::runBlender(unsigned char* input_data, unsigned char* output
 	cl_int err;
 	cl::Event event;
 
+	// 3通道进3通道出，由于CUDA使用Texture来对map进行计算，只支持4通道图像，因此需要
+	// 先将3通道图像转换为4通道图像，计算完成之后再转换为3通道图像。其余情况类似。
+	unsigned char* inBuffer = nullptr;
+	unsigned char* outBuffer = nullptr;
+	if (m_colorMode == 1)
+	{
+		outBuffer = new unsigned char[m_outputWidth*m_outputHeight * m_channels];
+		inBuffer = new unsigned char[m_inputWidth*m_inputHeight * m_channels];
+		RGB2RGBA(inBuffer, input_data, m_inputWidth*m_inputHeight * 3);
+	}
+	else if (m_colorMode == 2)
+	{
+		inBuffer = input_data;
+		outBuffer = output_data;
+	}
+	else if (m_colorMode == 3)
+	{
+		inBuffer = new unsigned char[m_inputWidth*m_inputHeight * m_channels];
+		RGB2RGBA(inBuffer, input_data, m_inputWidth*m_inputHeight * 3);
+		outBuffer = output_data;
+	}
+	else
+	{
+		inBuffer = input_data;
+		outBuffer = new unsigned char[m_outputWidth*m_outputHeight * m_channels];
+	}
 	// Step 8: Run the kernels
 	// parameters need to be fixed.
-	err = m_commandQueue->enqueueWriteImage(*m_inputImage, CL_TRUE, m_origins, m_inputRegions, 0, 0, input_data, nullptr, &event);
+	err = m_commandQueue->enqueueWriteImage(*m_inputImage, CL_TRUE, m_origins, m_inputRegions, 0, 0, inBuffer, nullptr, &event);
 	err = m_commandQueue->enqueueNDRangeKernel(*m_kernel, cl::NullRange, cl::NDRange(m_outputWidth, m_outputHeight), cl::NDRange(16, 16), nullptr, &event);
 	checkError(err, "CommandQueue::enqueueNDRangeKernel()");
 	event.wait();
-	err = m_commandQueue->enqueueReadImage(*m_outputImage, CL_TRUE, m_origins, m_outputRegions, 0, 0, output_data, 0, &event);
+	err = m_commandQueue->enqueueReadImage(*m_outputImage, CL_TRUE, m_origins, m_outputRegions, 0, 0, outBuffer, 0, &event);
 	checkError(err, "CommandQueue::enqueueReadImage()");
+
+	if (m_colorMode == 1)      // THREE_CHANNELS
+	{
+		RGBA2RGB(output_data, outBuffer, m_outputWidth*m_outputHeight*m_channels);
+		delete[] outBuffer;
+		delete[] inBuffer;
+	}
+	else if (m_colorMode == 2)
+	{
+		// Nothing to do
+	}
+	else if (m_colorMode == 3)
+	{
+		delete[] inBuffer;
+	}
+	else
+	{
+		RGBA2RGB(output_data, outBuffer, m_outputWidth*m_outputHeight*m_channels);
+		delete[] outBuffer;
+	}
 }
 
 void COpenCLBlender::destroyBlender()

@@ -4,7 +4,7 @@
 #include <regex>
 
 CBaseBlender::CBaseBlender() : m_channels(4), m_blendWidth(0), m_leftMapData(nullptr), m_rightMapData(nullptr), m_unrollMap(nullptr),
-m_inputHeight(0), m_inputWidth(0), m_outputWidth(0), m_outputHeight(0), m_paramsChanged(false), m_blenderType(1)
+m_inputHeight(0), m_inputWidth(0), m_outputWidth(0), m_outputHeight(0), m_paramsChanged(false), m_blenderType(1), m_colorMode(0)
 {
 }
 
@@ -180,4 +180,43 @@ bool CBaseBlender::isOffsetValid(std::string& _offset)
 	}
 
 	return result.size() >= paramsNum ? true : false;
+}
+
+void CBaseBlender::RGB2RGBA(unsigned char* rgba, unsigned char* rgb, int imageSize)
+{
+	if (rgba == nullptr || rgb == nullptr || imageSize <= 0)
+	{
+		return;
+	}
+	int rgbIndex = 0;
+	int rgbaIndex = 0;
+
+	while (rgbIndex < imageSize) {
+		rgba[rgbaIndex] = rgb[rgbIndex];
+		rgba[rgbaIndex + 1] = rgb[rgbIndex + 1];
+		rgba[rgbaIndex + 2] = rgb[rgbIndex + 2];
+		rgba[rgbaIndex + 3] = 255;
+		rgbIndex += 3;
+		rgbaIndex += 4;
+	}
+}
+
+void CBaseBlender::RGBA2RGB(unsigned char* rgb, unsigned char* rgba, int imageSize)
+{
+	if (rgba == nullptr || rgb == nullptr || imageSize <= 0)
+	{
+		return;
+	}
+
+	int rgbIndex = 0;
+	int rgbaIndex = 0;
+
+	while (rgbaIndex < imageSize) {
+		rgb[rgbIndex] = rgba[rgbaIndex];
+		rgb[rgbIndex + 1] = rgba[rgbaIndex + 1];
+		rgb[rgbIndex + 2] = rgba[rgbaIndex + 2];
+
+		rgbIndex += 3;
+		rgbaIndex += 4;
+	}
 }

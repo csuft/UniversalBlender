@@ -77,7 +77,7 @@ void testCUDA()
 	// 4. runImageBlender();
 	CBlenderWrapper* wrapper = new CBlenderWrapper;
 	wrapper->capabilityAssessment();
-	wrapper->getSingleInstance(4);
+	wrapper->getSingleInstance(CBlenderWrapper::FOUR_CHANNELS);
 	wrapper->initializeDevice();
 	wrapper->runImageBlender(params, CBlenderWrapper::THREEDIMENSION_BLENDER);
 
@@ -111,7 +111,7 @@ void testOpenCL()
 	// 4. runImageBlender();
 	CBlenderWrapper* wrapper = new CBlenderWrapper;
 	wrapper->capabilityAssessment();
-	wrapper->getSingleInstance(4);
+	wrapper->getSingleInstance(CBlenderWrapper::FOUR_CHANNELS);
 	wrapper->initializeDevice();
 	wrapper->runImageBlender(params, CBlenderWrapper::THREEDIMENSION_BLENDER);
 
@@ -143,7 +143,7 @@ void testCPU()
 	// 4. runImageBlender();
 	CBlenderWrapper* wrapper = new CBlenderWrapper;
 	wrapper->capabilityAssessment();
-	wrapper->getSingleInstance(3);
+	wrapper->getSingleInstance(CBlenderWrapper::THREE_CHANNELS);
 	wrapper->initializeDevice();
 	wrapper->runImageBlender(params, CBlenderWrapper::THREEDIMENSION_BLENDER);
 

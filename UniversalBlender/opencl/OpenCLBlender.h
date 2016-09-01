@@ -17,7 +17,7 @@ class COpenCLBlender : public CBaseBlender
 {
 public:
 	COpenCLBlender();
-	COpenCLBlender(int channels);
+	COpenCLBlender(int mode);
 	~COpenCLBlender();
 
 	void initializeDevice();

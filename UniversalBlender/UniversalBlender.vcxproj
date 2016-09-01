@@ -132,7 +132,6 @@
     <None Include="test\main.cpp" />
     <None Include="test\OpenCLBlenderTest.cpp" />
     <ClCompile Include="utils\base64.cpp" />
-    <ClCompile Include="utils\common.cpp" />
     <ClCompile Include="wrapper\BlenderWrapper.cpp" />
     <ClCompile Include="cpu\CPUBlender.cpp" />
     <ClCompile Include="cuda\CUDABlender.cpp" />
@@ -148,7 +147,6 @@
     <None Include="test\headers.h" />
     <None Include="test\OpenCLBlenderTest.h" />
     <ClInclude Include="utils\base64.h" />
-    <ClInclude Include="utils\common.h" />
     <ClInclude Include="wrapper\BlenderWrapper.h" />
     <ClInclude Include="cpu\CPUBlender.h" />
     <ClInclude Include="cuda\CUDABlender.h" />

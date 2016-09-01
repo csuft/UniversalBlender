@@ -3,20 +3,18 @@
 
 extern "C" cudaError_t fishEyeBlender(cudaArray *inputBuffer, float *left_map, float*right_map, float* alpha_table, int image_width, int image_height, int bd_width, dim3 thread, dim3 numBlock, unsigned char *uOutBuffer, int type);
 
-CCUDABlender::CCUDABlender() : CCUDABlender(4)
+CCUDABlender::CCUDABlender() : CCUDABlender(2)
 {
 	
 }
 
-CCUDABlender::CCUDABlender(int channels) : m_inputImageSize(0), m_outputImageSize(0), m_cudaOutputBuffer(nullptr),
+CCUDABlender::CCUDABlender(int mode) : m_inputImageSize(0), m_outputImageSize(0), m_cudaOutputBuffer(nullptr),
 m_cudaAlphaTable(nullptr), m_cudaArray(nullptr), m_cudaLeftMapData(nullptr), m_cudaRightMapData(nullptr)
 {
+	m_colorMode = mode;
+	m_channels = 4;
+
 	m_unrollMap = new UnrollMap;
-	if (channels != 3 && channels != 4)
-	{
-		channels = 4;
-	}
-	m_channels = channels;
 	m_threadsPerBlock.x = 16;
 	m_threadsPerBlock.y = 16;
 	m_threadsPerBlock.z = 1;
@@ -83,12 +81,60 @@ void CCUDABlender::runBlender(unsigned char* input_data, unsigned char* output_d
 {
 	cudaError_t err = cudaSuccess;
 
-	err = cudaMemcpyToArray(m_cudaArray, 0, 0, input_data, m_inputImageSize * m_channels * sizeof(unsigned char), cudaMemcpyHostToDevice);
+	// 3通道进3通道出，由于CUDA使用Texture来对map进行计算，只支持4通道图像，因此需要
+	// 先将3通道图像转换为4通道图像，计算完成之后再转换为3通道图像。其余情况类似。
+	unsigned char* inBuffer = nullptr;
+	unsigned char* outBuffer = nullptr;
+	if (m_colorMode == 1)
+	{
+		outBuffer = new unsigned char[m_outputWidth*m_outputHeight * m_channels];
+		inBuffer = new unsigned char[m_inputWidth*m_inputHeight * m_channels];
+		RGB2RGBA(inBuffer, input_data, m_inputWidth*m_inputHeight * 3);
+	}
+	else if (m_colorMode == 2)
+	{
+		inBuffer = input_data;
+		outBuffer = output_data;
+	}
+	else if (m_colorMode == 3)
+	{
+		inBuffer = new unsigned char[m_inputWidth*m_inputHeight * m_channels];
+		RGB2RGBA(inBuffer, input_data, m_inputWidth*m_inputHeight * 3);
+		outBuffer = output_data;
+	}
+	else
+	{
+		inBuffer = input_data;
+		outBuffer = new unsigned char[m_outputWidth*m_outputHeight * m_channels];
+	}
+
+	err = cudaMemcpyToArray(m_cudaArray, 0, 0, inBuffer, m_inputImageSize * m_channels * sizeof(unsigned char), cudaMemcpyHostToDevice);
 	err = fishEyeBlender(m_cudaArray, m_cudaLeftMapData, m_cudaRightMapData, m_cudaAlphaTable, m_outputWidth, m_outputHeight, m_blendWidth, m_threadsPerBlock, m_numBlocksBlend, m_cudaOutputBuffer, m_blenderType);
-	err = cudaMemcpy(output_data, m_cudaOutputBuffer, m_outputImageSize * m_channels * sizeof(unsigned char), cudaMemcpyDeviceToHost);
+	err = cudaMemcpy(outBuffer, m_cudaOutputBuffer, m_outputImageSize * m_channels * sizeof(unsigned char), cudaMemcpyDeviceToHost);
 	if (err != cudaSuccess)
 	{
 		LOGERR("Error ocurred while blending...Code: %d", err);
+		return;
+	}
+
+	if (m_colorMode == 1)      // THREE_CHANNELS
+	{
+		RGBA2RGB(output_data, outBuffer, m_outputWidth*m_outputHeight*m_channels);
+		delete[] outBuffer;
+		delete[] inBuffer;
+	}
+	else if (m_colorMode == 2)
+	{
+		// Nothing to do
+	}
+	else if (m_colorMode == 3)
+	{
+		delete[] inBuffer;
+	}
+	else
+	{
+		RGBA2RGB(output_data, outBuffer, m_outputWidth*m_outputHeight*m_channels);
+		delete[] outBuffer;
 	}
 }
 
