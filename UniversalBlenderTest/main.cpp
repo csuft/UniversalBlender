@@ -56,9 +56,9 @@ void RGBA2RGB(unsigned char* rgb, unsigned char* rgba, int imageSize)
 void testCUDA()
 {
 	std::string offset = "2_748.791_759.200_758.990_0.000_0.000_90.000_742.211_2266.919_750.350_-0.300_0.100_90.030_3040_1520_1026";
-	unsigned char* inputImage = new unsigned char[4 * INPUT_WIDTH* INPUT_HEIGHT];
-	FILE* file = fopen("3d.dat", "rb");
-	fread(inputImage, 1, 4 * INPUT_WIDTH * INPUT_HEIGHT, file);
+	unsigned char* inputImage = new unsigned char[3 * INPUT_WIDTH* INPUT_HEIGHT];
+	FILE* file = fopen("transformed_rgb.dat", "rb");
+	fread(inputImage, 1, 3 * INPUT_WIDTH * INPUT_HEIGHT, file);
 	fclose(file);
 	cv::Mat outputImage(OUTPUT_HEIGHT, OUTPUT_WIDTH, CV_8UC4);
 
@@ -77,12 +77,15 @@ void testCUDA()
 	// 4. runImageBlender();
 	CBlenderWrapper* wrapper = new CBlenderWrapper;
 	wrapper->capabilityAssessment();
-	wrapper->getSingleInstance(CBlenderWrapper::FOUR_CHANNELS);
+	wrapper->getSingleInstance(CBlenderWrapper::THREE_IN_FOUR_OUT);
 	wrapper->initializeDevice();
 	wrapper->runImageBlender(params, CBlenderWrapper::THREEDIMENSION_BLENDER);
+	 
+	file = fopen("threeinfourout.dat", "wb");
+	fwrite(outputImage.data, 1, 4 * OUTPUT_WIDTH * OUTPUT_HEIGHT, file);
+	fclose(file);
 
-	cv::imshow("Blender Result", outputImage);
-	cv::imwrite("BlenderResult_CUDA_3D.jpg", outputImage);
+	//cv::imwrite("BlenderResult_CUDA_3D_3IN4OUT.jpg", outputImage);
 
 	delete wrapper;
 }
@@ -224,9 +227,9 @@ int main(void)
 	//convert("3d.jpg");
 	//testCPU();
 	//testOpenCL();
-	//testCUDA();
+	testCUDA();
 	//test_RGBA2RGB();
-	test_RGB2RGBA();
+	//test_RGB2RGBA();
 
 	return 0;
 }
