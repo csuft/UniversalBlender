@@ -127,6 +127,9 @@
     <PostBuildEvent>
       <Command>xcopy /y $(ProjectDir)wrapper\BlenderWrapper.h $(TargetDir)</Command>
     </PostBuildEvent>
+    <CudaCompile>
+      <TargetMachinePlatform>64</TargetMachinePlatform>
+    </CudaCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="base\BaseBlender.cpp" />

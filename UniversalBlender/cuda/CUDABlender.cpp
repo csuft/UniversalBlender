@@ -85,6 +85,7 @@ void CCUDABlender::runBlender(unsigned char* input_data, unsigned char* output_d
 	// 先将3通道图像转换为4通道图像，计算完成之后再转换为3通道图像。其余情况类似。
 	unsigned char* inBuffer = nullptr;
 	unsigned char* outBuffer = nullptr;
+	startTimer();
 	if (m_colorMode == 1)
 	{
 		outBuffer = new unsigned char[m_outputWidth*m_outputHeight * m_channels];
@@ -107,16 +108,29 @@ void CCUDABlender::runBlender(unsigned char* input_data, unsigned char* output_d
 		inBuffer = input_data;
 		outBuffer = new unsigned char[m_outputWidth*m_outputHeight * m_channels];
 	}
-
-	err = cudaMemcpyToArray(m_cudaArray, 0, 0, inBuffer, m_inputImageSize * m_channels * sizeof(unsigned char), cudaMemcpyHostToDevice);
+	stopTimer("Color Model Transform");
+	startTimer();
+	LOGINFO("m_inputWidth: %d, m_inputHeight: %d, m_inputImageSize: %d, m_channels: %d", m_inputWidth, m_inputHeight, m_inputImageSize, m_channels);
+	err = cudaMemcpyToArray(m_cudaArray, 0, 0, inBuffer, m_inputImageSize * sizeof(uchar4), cudaMemcpyHostToDevice);
+	if (err != cudaSuccess)
+	{
+		LOGERR("Description:%s, Error Code: %d", cudaGetErrorString(err), err);
+		return;
+	}
 	err = fishEyeBlender(m_cudaArray, m_cudaLeftMapData, m_cudaRightMapData, m_cudaAlphaTable, m_outputWidth, m_outputHeight, m_blendWidth, m_threadsPerBlock, m_numBlocksBlend, m_cudaOutputBuffer, m_blenderType);
+	if (err != cudaSuccess)
+	{
+		LOGERR("Description:%s, Error Code: %d", cudaGetErrorString(err), err);
+		return;
+	}
 	err = cudaMemcpy(outBuffer, m_cudaOutputBuffer, m_outputImageSize * m_channels * sizeof(unsigned char), cudaMemcpyDeviceToHost);
 	if (err != cudaSuccess)
 	{
-		LOGERR("Error ocurred while blending...Code: %d", err);
+		LOGERR("Description:%s, Error Code: %d", cudaGetErrorString(err), err);
 		return;
 	}
-
+	stopTimer("CUDA Frame Mapping");
+	cudaDeviceSynchronize();
 	if (m_colorMode == 1)      // THREE_CHANNELS
 	{
 		RGBA2RGB(output_data, outBuffer, m_outputWidth*m_outputHeight*m_channels);

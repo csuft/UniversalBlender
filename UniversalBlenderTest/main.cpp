@@ -79,11 +79,15 @@ void testCUDA()
 	wrapper->capabilityAssessment();
 	wrapper->getSingleInstance(CBlenderWrapper::THREE_IN_FOUR_OUT);
 	wrapper->initializeDevice();
-	wrapper->runImageBlender(params, CBlenderWrapper::THREEDIMENSION_BLENDER);
-	 
-	file = fopen("threeinfourout.dat", "wb");
-	fwrite(outputImage.data, 1, 4 * OUTPUT_WIDTH * OUTPUT_HEIGHT, file);
-	fclose(file);
+	char name[128];
+	for (size_t i = 0; i < 1000; i++)
+	{
+		wrapper->runImageBlender(params, CBlenderWrapper::THREEDIMENSION_BLENDER);
+		sprintf_s(name, "threeinfourout_%d.dat", i);
+		file = fopen(name, "wb");
+		fwrite(outputImage.data, 1, 4 * OUTPUT_WIDTH * OUTPUT_HEIGHT, file);
+		fclose(file);
+	} 
 
 	//cv::imwrite("BlenderResult_CUDA_3D_3IN4OUT.jpg", outputImage);
 

@@ -3,6 +3,7 @@
 
 #include "../utils/UnrollMap.h"
 #include "../utils/log.h"
+#include "../utils/timer.h"
 
 #include <vector>
 
@@ -24,8 +25,11 @@ protected:
 	bool isOffsetValid(std::string& _offset);
 	void RGBA2RGB(unsigned char* rgb, unsigned char* rgba, int imageSize);
 	void RGB2RGBA(unsigned char* rgba, unsigned char* rgb, int imageSize);
+	void startTimer();
+	void stopTimer(const char* operation);
 
 protected:
+	Timer m_timer;
 	UnrollMap* m_unrollMap;  
 	unsigned int m_channels;
 	float* m_leftMapData;

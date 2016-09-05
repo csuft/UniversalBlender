@@ -12,14 +12,6 @@
 #include <time.h>  
 #include "../utils/log.h"
 
-cudaError_t checkError(cudaError_t ret) {
-	if (ret != cudaSuccess)
-	{
-		LOGERR("cuda err:%s ,file:%s,line:%d ...", cudaGetErrorString(ret), __FILE__, __LINE__);
-	}
-	return ret;
-}
-
 texture<uchar4, cudaTextureType2D, cudaReadModeNormalizedFloat> tex;
 
 // kernel function for 3d blender 
@@ -159,8 +151,12 @@ extern "C" cudaError_t fishEyeBlender(cudaArray *inputBuffer, float *left_map, f
 	tex.addressMode[1] = cudaAddressModeClamp;
 	tex.normalized = false;
 	tex.filterMode = cudaFilterModeLinear;
-
-	checkError(cudaBindTextureToArray(tex, inputBuffer));
+	ret = cudaBindTextureToArray(tex, inputBuffer);
+	if (cudaSuccess != ret)
+	{
+		LOGERR("Description:%s, Error Code: %d", cudaGetErrorString(ret), ret);
+		return ret;
+	}
 	
 	if (type == 1)
 	{
@@ -170,7 +166,7 @@ extern "C" cudaError_t fishEyeBlender(cudaArray *inputBuffer, float *left_map, f
 	{
 		threeDBlender << <numBlock, thread >> >(image_width, image_height, left_map, right_map, uOutBuffer);
 	}
+	cudaDeviceSynchronize();
 
 	return ret;
-
 } 

@@ -56,6 +56,7 @@ void COpenCLBlender::runBlender(unsigned char* input_data, unsigned char* output
 	// 先将3通道图像转换为4通道图像，计算完成之后再转换为3通道图像。其余情况类似。
 	unsigned char* inBuffer = nullptr;
 	unsigned char* outBuffer = nullptr;
+	startTimer();
 	if (m_colorMode == 1)
 	{
 		outBuffer = new unsigned char[m_outputWidth*m_outputHeight * m_channels];
@@ -78,6 +79,8 @@ void COpenCLBlender::runBlender(unsigned char* input_data, unsigned char* output
 		inBuffer = input_data;
 		outBuffer = new unsigned char[m_outputWidth*m_outputHeight * m_channels];
 	}
+	stopTimer("Color Model Transform");
+	startTimer();
 	// Step 8: Run the kernels
 	// parameters need to be fixed.
 	err = m_commandQueue->enqueueWriteImage(*m_inputImage, CL_TRUE, m_origins, m_inputRegions, 0, 0, inBuffer, nullptr, &event);
@@ -86,7 +89,7 @@ void COpenCLBlender::runBlender(unsigned char* input_data, unsigned char* output
 	event.wait();
 	err = m_commandQueue->enqueueReadImage(*m_outputImage, CL_TRUE, m_origins, m_outputRegions, 0, 0, outBuffer, 0, &event);
 	checkError(err, "CommandQueue::enqueueReadImage()");
-
+	stopTimer("OpenCL Frame Mapping");
 	if (m_colorMode == 1)      // THREE_CHANNELS
 	{
 		RGBA2RGB(output_data, outBuffer, m_outputWidth*m_outputHeight*m_channels);

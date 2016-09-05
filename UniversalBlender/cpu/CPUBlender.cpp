@@ -48,6 +48,7 @@ void CCPUBlender::runBlender(unsigned char* input_data, unsigned char* output_da
 		tempBuffer = output_data;
 	}
 
+	startTimer();
 	if (m_blenderType == 1)
 	{
 		m_blendWidth = 5 * m_outputWidth / 360;
@@ -407,6 +408,7 @@ void CCPUBlender::runBlender(unsigned char* input_data, unsigned char* output_da
 			threads[i].get();
 		}
 	}
+	stopTimer("CPU Frame Mapping");
 
 	if (m_colorMode == 3)
 	{
