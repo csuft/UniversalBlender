@@ -195,7 +195,7 @@ void COpenCLBlender::setupBlender()
 		err |= m_kernel->setArg(4, *m_inputParamsBuffer);
 		err |= m_kernel->setArg(5, m_widthFactor);
 		err |= m_kernel->setArg(6, m_heightFactor);
-		err |= m_kernel->setArg(7, m_blenderType);
+		err |= m_kernel->setArg(7, m_blenderType); 
 		checkError(err, "Kernel::setArg()");
 	}
 }

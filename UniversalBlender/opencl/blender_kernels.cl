@@ -74,17 +74,3 @@ __kernel  void  opencl_blend(__read_only    image2d_t imgSrc,		 // ‰»Î
 		return;
 	}
 }
-
-// Convert RGB(BGR) to RGBA(BGRA) 
-__kernel void add_alpha_channel(__global unsigned char* input, __global unsigned char* output)
-{
-
-
-}
-
-// Convert RGBA(BGRA) to RGB(BGR)
-__kernel void remove_alpha_channel(__global unsigned char* input, __global unsigned char* output)
-{
-
-
-}

@@ -36,7 +36,7 @@ CBlenderWrapper::~CBlenderWrapper()
 
 int CBlenderWrapper::capabilityAssessment()
 { 
-	/*if (isSupportCUDA())
+/*	if (isSupportCUDA())
 	{
 	m_deviceType = CUDA_BLENDER;
 	LOGINFO("CUDA compute technology is available in this platform.");
@@ -48,8 +48,8 @@ int CBlenderWrapper::capabilityAssessment()
 	}
 	else
 	{
-	m_deviceType = CPU_BLENDER;
-	LOGINFO("Only CPU is available in this platform.");
+		m_deviceType = CPU_BLENDER;
+		LOGINFO("Only CPU is available in this platform.");
 	}
 	
 	return m_deviceType;
@@ -200,7 +200,7 @@ void CBlenderWrapper::initializeDevice()
 }
 
 // 该接口封装CPU/OPENCL/CUDA进行图像拼接渲染
-void CBlenderWrapper::runImageBlender(BlenderParams& params, BLENDER_TYPE type)
+bool CBlenderWrapper::runImageBlender(BlenderParams& params, BLENDER_TYPE type)
 {
 	if (checkParameters(params))
 	{
@@ -210,8 +210,10 @@ void CBlenderWrapper::runImageBlender(BlenderParams& params, BLENDER_TYPE type)
 		{
 			blender->setupBlender();
 			blender->runBlender(params.input_data, params.output_data);
+			return true;
 		}
 	}
+	return false;
 }
 
 bool CBlenderWrapper::checkParameters(BlenderParams& params)

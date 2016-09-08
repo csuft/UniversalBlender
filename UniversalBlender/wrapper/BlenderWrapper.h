@@ -11,7 +11,7 @@ typedef struct _BlenderParams {
 	unsigned int	output_width	= 0;
 	unsigned int	output_height	= 0;
 	unsigned char*	input_data		= nullptr;
-	unsigned char*	output_data		= nullptr;
+	unsigned char*	output_data		= nullptr; 
 	std::string		offset			= "";
 }BlenderParams, *BlenderParamsPtr;
 
@@ -52,7 +52,7 @@ public:
 	int capabilityAssessment();
 	void getSingleInstance(COLOR_MODE mode);
 	void initializeDevice();
-	void runImageBlender(BlenderParams& params, BLENDER_TYPE type);
+	bool runImageBlender(BlenderParams& params, BLENDER_TYPE type);
 
 private:
 	bool checkParameters(BlenderParams& params);
