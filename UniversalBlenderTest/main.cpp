@@ -14,13 +14,51 @@
 
 using namespace cv;
 
+void RGB2RGBA(unsigned char* rgba, unsigned char* rgb, int imageSize)
+{
+	if (rgba == nullptr || rgb == nullptr || imageSize <= 0)
+	{
+		return;
+	}
+	int rgbIndex = 0;
+	int rgbaIndex = 0;
+
+	while (rgbIndex < imageSize) { 
+		rgba[rgbaIndex] = rgb[rgbIndex];
+		rgba[rgbaIndex + 1] = rgb[rgbIndex + 1];
+		rgba[rgbaIndex + 2] = rgb[rgbIndex + 2];
+		rgba[rgbaIndex + 3] = 255;
+		rgbIndex += 3;
+		rgbaIndex += 4;
+	}
+}
+
+void RGBA2RGB(unsigned char* rgb, unsigned char* rgba, int imageSize)
+{
+	if (rgba == nullptr || rgb == nullptr || imageSize <= 0)
+	{
+		return;
+	}
+
+	int rgbIndex = 0;
+	int rgbaIndex = 0;
+
+	while (rgbaIndex < imageSize) {
+		rgb[rgbIndex] = rgba[rgbaIndex];
+		rgb[rgbIndex + 1] = rgba[rgbaIndex + 1];
+		rgb[rgbIndex + 2] = rgba[rgbaIndex + 2];
+
+		rgbIndex += 3;
+		rgbaIndex += 4;
+	}
+}
 
 void testCUDA()
 {
 	std::string offset = "2_748.791_759.200_758.990_0.000_0.000_90.000_742.211_2266.919_750.350_-0.300_0.100_90.030_3040_1520_1026";
-	unsigned char* inputImage = new unsigned char[4 * INPUT_WIDTH* INPUT_HEIGHT];
-	FILE* file = fopen("3d.dat", "rb");
-	fread(inputImage, 1, 4 * INPUT_WIDTH * INPUT_HEIGHT, file);
+	unsigned char* inputImage = new unsigned char[3 * INPUT_WIDTH* INPUT_HEIGHT];
+	FILE* file = fopen("transformed_rgb.dat", "rb");
+	fread(inputImage, 1, 3 * INPUT_WIDTH * INPUT_HEIGHT, file);
 	fclose(file);
 	cv::Mat outputImage(OUTPUT_HEIGHT, OUTPUT_WIDTH, CV_8UC4);
 
@@ -39,12 +77,19 @@ void testCUDA()
 	// 4. runImageBlender();
 	CBlenderWrapper* wrapper = new CBlenderWrapper;
 	wrapper->capabilityAssessment();
-	wrapper->getSingleInstance(4);
+	wrapper->getSingleInstance(CBlenderWrapper::THREE_IN_FOUR_OUT);
 	wrapper->initializeDevice();
-	wrapper->runImageBlender(params, CBlenderWrapper::THREEDIMENSION_BLENDER);
+	char name[128];
+	for (size_t i = 0; i < 1000; i++)
+	{
+		wrapper->runImageBlender(params, CBlenderWrapper::THREEDIMENSION_BLENDER);
+		sprintf_s(name, "threeinfourout_%d.dat", i);
+		file = fopen(name, "wb");
+		fwrite(outputImage.data, 1, 4 * OUTPUT_WIDTH * OUTPUT_HEIGHT, file);
+		fclose(file);
+	} 
 
-	cv::imshow("Blender Result", outputImage);
-	cv::imwrite("BlenderResult_CUDA_3D.jpg", outputImage);
+	//cv::imwrite("BlenderResult_CUDA_3D_3IN4OUT.jpg", outputImage);
 
 	delete wrapper;
 }
@@ -73,7 +118,7 @@ void testOpenCL()
 	// 4. runImageBlender();
 	CBlenderWrapper* wrapper = new CBlenderWrapper;
 	wrapper->capabilityAssessment();
-	wrapper->getSingleInstance(4);
+	wrapper->getSingleInstance(CBlenderWrapper::FOUR_CHANNELS);
 	wrapper->initializeDevice();
 	wrapper->runImageBlender(params, CBlenderWrapper::THREEDIMENSION_BLENDER);
 
@@ -105,7 +150,7 @@ void testCPU()
 	// 4. runImageBlender();
 	CBlenderWrapper* wrapper = new CBlenderWrapper;
 	wrapper->capabilityAssessment();
-	wrapper->getSingleInstance(3);
+	wrapper->getSingleInstance(CBlenderWrapper::THREE_CHANNELS);
 	wrapper->initializeDevice();
 	wrapper->runImageBlender(params, CBlenderWrapper::THREEDIMENSION_BLENDER);
 
@@ -113,6 +158,38 @@ void testCPU()
 	cv::imwrite("BlenderResult_CPU_3D.jpg", outputImage);
 
 	delete wrapper;
+}
+
+void test_RGBA2RGB()
+{
+	unsigned char* inputImage = new unsigned char[4 * INPUT_WIDTH * INPUT_HEIGHT];
+	unsigned char* outputImage = new unsigned char[3 * INPUT_WIDTH * INPUT_HEIGHT];
+	FILE* infile = fopen("original_rgba.dat", "rb");
+	fread(inputImage, 1, 4 * INPUT_WIDTH*INPUT_HEIGHT, infile);
+	fclose(infile);
+
+	RGBA2RGB(outputImage, inputImage, 4*INPUT_WIDTH*INPUT_HEIGHT);
+
+	FILE* outfile = fopen("transformed_rgb.dat", "wb");
+	fwrite(outputImage, 1, 3 * INPUT_WIDTH*INPUT_HEIGHT, outfile);
+	fclose(outfile);
+	 
+}
+
+void test_RGB2RGBA()
+{
+	unsigned char* inputImage = new unsigned char[3 * INPUT_WIDTH * INPUT_HEIGHT];
+	unsigned char* outputImage = new unsigned char[4 * INPUT_WIDTH * INPUT_HEIGHT];
+	FILE* infile = fopen("transformed_rgb.dat", "rb");
+	fread(inputImage, 1, 3 * INPUT_WIDTH*INPUT_HEIGHT, infile);
+	fclose(infile);
+
+	RGB2RGBA(outputImage, inputImage, 3 * INPUT_WIDTH*INPUT_HEIGHT);
+
+	FILE* outfile = fopen("transformed_rgba.dat", "wb");
+	fwrite(outputImage, 1, 4 * INPUT_WIDTH*INPUT_HEIGHT, outfile);
+	fclose(outfile);
+
 }
 
 void convert(const char* path)
@@ -153,8 +230,10 @@ int main(void)
 {
 	//convert("3d.jpg");
 	//testCPU();
-	testOpenCL();
-	//testCUDA();
+	//testOpenCL();
+	testCUDA();
+	//test_RGBA2RGB();
+	//test_RGB2RGBA();
 
 	return 0;
 }

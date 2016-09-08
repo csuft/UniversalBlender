@@ -8,13 +8,26 @@ CCPUBlender::CCPUBlender() : CCPUBlender(4)
 
 }
 
-CCPUBlender::CCPUBlender(int channels)
+CCPUBlender::CCPUBlender(int mode)
 {
-	if (channels != 3 && channels != 4)
+	m_colorMode = mode;
+	if (mode == 1)       // THREE_CHANNELS
 	{
-		channels = 4;
+		m_channels = 3;
 	}
-	m_channels = channels;
+	else if (mode == 2)  // FOUR_CHANNELS
+	{
+		m_channels = 4;
+	}
+	else if (mode == 3)  // THREE_IN_FOUR_OUT
+	{
+		m_channels = 3;
+	}
+	else                 // FOUR_IN_THREE_OUT
+	{
+		m_channels = 4;
+	}
+
 	m_unrollMap = new UnrollMap;
 }
 
@@ -23,20 +36,19 @@ CCPUBlender::~CCPUBlender()
 	destroyBlender();
 }
 
-unsigned char* CCPUBlender::addAlphaChannel(const unsigned char* inputImage)
-{
-	// To do lately...
-	return nullptr;
-}
-
-unsigned char* CCPUBlender::removeAlphaChannel(const unsigned char* inputImage)
-{
-	// To do lately...
-	return nullptr;
-}
-
 void CCPUBlender::runBlender(unsigned char* input_data, unsigned char* output_data)
 {
+	unsigned char* tempBuffer = nullptr;
+	if (m_colorMode == 3 || m_colorMode == 4)
+	{
+		tempBuffer = new unsigned char[m_outputWidth*m_outputHeight * m_channels];
+	}
+	else
+	{
+		tempBuffer = output_data;
+	}
+
+	startTimer();
 	if (m_blenderType == 1)
 	{
 		m_blendWidth = 5 * m_outputWidth / 360;
@@ -69,7 +81,7 @@ void CCPUBlender::runBlender(unsigned char* input_data, unsigned char* output_da
 			//右鱼眼第一部分
 			for (int y = yStart; y < yEnd; y++)
 			{
-				blendImageData = (output_data + y * m_outputWidth * m_channels);//blendImage.ptr<uchar>(y);
+				blendImageData = (tempBuffer + y * m_outputWidth * m_channels);//blendImage.ptr<uchar>(y);
 				rightMapData = (m_leftMapData + y * m_outputWidth * 2);//rightMap.ptr<float>(y);
 				leftMapData = (m_rightMapData + y * m_outputWidth * 2);//leftMap.ptr<float>(y);
 				for (int x = 0; x < m_start1; x++)
@@ -329,7 +341,7 @@ void CCPUBlender::runBlender(unsigned char* input_data, unsigned char* output_da
 	}
 	else
 	{
-		memset(output_data, 0, m_outputWidth * m_outputHeight * m_channels * sizeof(unsigned char));
+		memset(tempBuffer, 0, m_outputWidth * m_outputHeight * m_channels * sizeof(unsigned char));
 		auto fun = [&](int yStart, int yEnd)
 		{
 			float Uf, Vf;
@@ -347,7 +359,7 @@ void CCPUBlender::runBlender(unsigned char* input_data, unsigned char* output_da
 			for (int y = yStart; y < yEnd; y++)
 			{
 				int yIndex = y;
-				outImageData = output_data + yIndex * m_outputWidth * m_channels;
+				outImageData = tempBuffer + yIndex * m_outputWidth * m_channels;
 				mapData = m_leftMapData + y * m_outputWidth * 2;
 				for (int x = 0; x < m_outputWidth; x++)
 				{
@@ -396,6 +408,19 @@ void CCPUBlender::runBlender(unsigned char* input_data, unsigned char* output_da
 			threads[i].get();
 		}
 	}
+	stopTimer("CPU Frame Mapping");
+
+	if (m_colorMode == 3)
+	{
+		RGB2RGBA(output_data, tempBuffer, m_outputHeight*m_outputWidth*m_channels); 
+		delete[] tempBuffer;
+	}
+	if (m_colorMode == 4)
+	{
+		RGBA2RGB(output_data, tempBuffer, m_outputWidth*m_outputHeight*m_channels);
+		delete[] tempBuffer;
+	}
+	
 }
 
 // 如果用户忘记调用该方法，则会在析构函数中进行资源释放

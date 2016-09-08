@@ -11,7 +11,7 @@ typedef struct _BlenderParams {
 	unsigned int	output_width	= 0;
 	unsigned int	output_height	= 0;
 	unsigned char*	input_data		= nullptr;
-	unsigned char*	output_data		= nullptr;
+	unsigned char*	output_data		= nullptr; 
 	std::string		offset			= "";
 }BlenderParams, *BlenderParamsPtr;
 
@@ -34,14 +34,25 @@ public:
 		THREEDIMENSION_BLENDER		= 2,
 		PANORAMIC_CENTER_BLENDER	= 3
 	};
+	// 1: 3通道进，3通道出
+	// 2: 4通道进，4通道出
+	// 3: 3通道进，4通道出
+	// 4: 4通道进，3通道出
+	enum COLOR_MODE {
+		THREE_CHANNELS    = 1,
+		FOUR_CHANNELS     = 2,
+		THREE_IN_FOUR_OUT = 3,
+		FOUR_IN_THREE_OUT = 4
+	};
+
 	explicit CBlenderWrapper();
 	~CBlenderWrapper();
 
 public:
 	int capabilityAssessment();
-	void getSingleInstance(int channels = 4);
+	void getSingleInstance(COLOR_MODE mode);
 	void initializeDevice();
-	void runImageBlender(BlenderParams& params, BLENDER_TYPE type);
+	bool runImageBlender(BlenderParams& params, BLENDER_TYPE type);
 
 private:
 	bool checkParameters(BlenderParams& params);

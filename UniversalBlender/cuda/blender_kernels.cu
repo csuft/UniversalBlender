@@ -12,14 +12,6 @@
 #include <time.h>  
 #include "../utils/log.h"
 
-cudaError_t checkError(cudaError_t ret) {
-	if (ret != cudaSuccess)
-	{
-		LOGERR("cuda err:%s ,file:%s,line:%d ...", cudaGetErrorString(ret), __FILE__, __LINE__);
-	}
-	return ret;
-}
-
 texture<uchar4, cudaTextureType2D, cudaReadModeNormalizedFloat> tex;
 
 // kernel function for 3d blender 
@@ -27,6 +19,17 @@ __global__ void threeDBlender(int image_width, int image_height, float *left_map
 {
 	int x = (blockIdx.x * blockDim.x) + threadIdx.x;
 	int y = (blockIdx.y * blockDim.y) + threadIdx.y;
+
+	if (x > image_width)
+	{
+		x = image_width - 1;
+	}
+
+	if (y > image_height)
+	{
+		y = image_height - 1;
+	}
+
 	int index = y * image_width + x;
 	int pivot = image_width / 2;  
 	float* location = nullptr;
@@ -61,11 +64,21 @@ __global__ void threeDBlender(int image_width, int image_height, float *left_map
 }
 
 // kernel function for panoramic blender
-__global__ void panoramicBlender(int blend_width, int image_width, float *left_map, float *right_map, float *alpha_table, unsigned char *out_img)
+__global__ void panoramicBlender(int blend_width, int image_width, int image_height, float *left_map, float *right_map, float *alpha_table, unsigned char *out_img)
 {
 	int x = (blockIdx.x * blockDim.x) + threadIdx.x;
 	int y = (blockIdx.y * blockDim.y) + threadIdx.y;
-	int index = y * image_width + x;
+
+	if (x > image_width)
+	{
+		x = image_width - 1;
+	}
+	if (y > image_height)
+	{
+		y = image_height - 1;
+	}
+
+	int index = (y * image_width + x)>>1; 
 	int left_start = image_width >> 2;
 	float *location = nullptr;
 	//  _______________________________________________________
@@ -123,10 +136,10 @@ BLEND_LEFT:
 		float4 val0 = tex2D(tex, location[0], location[1]);
 		float4 val1 = tex2D(tex, location1[0], location1[1]);
 
-		out_img[4 * index + 0] = (val0.x*alpha + val1.x*(1 - alpha)) * 255;
-		out_img[4 * index + 1] = (val0.y*alpha + val1.y*(1 - alpha)) * 255;
-		out_img[4 * index + 2] = (val0.z*alpha + val1.z*(1 - alpha)) * 255;
-		out_img[4 * index + 3] = 255;
+		//out_img[4 * index + 0] = (val0.x*alpha + val1.x*(1 - alpha)) * 255;
+		//out_img[4 * index + 1] = (val0.y*alpha + val1.y*(1 - alpha)) * 255;
+		//out_img[4 * index + 2] = (val0.z*alpha + val1.z*(1 - alpha)) * 255;
+		//out_img[4 * index + 3] = 255;
 		return;
 	}
 
@@ -141,10 +154,10 @@ BLEND_RIGHT:
 		float4 val0 = tex2D(tex, location[0], location[1]);
 		float4 val1 = tex2D(tex, location1[0], location1[1]);
 
-		out_img[4 * index + 0] = (val0.x*alpha + val1.x*(1 - alpha)) * 255;
-		out_img[4 * index + 1] = (val0.y*alpha + val1.y*(1 - alpha)) * 255;
-		out_img[4 * index + 2] = (val0.z*alpha + val1.z*(1 - alpha)) * 255;
-		out_img[4 * index + 3] = 255;
+		//out_img[4 * index + 0] = (val0.x*alpha + val1.x*(1 - alpha)) * 255;
+		//out_img[4 * index + 1] = (val0.y*alpha + val1.y*(1 - alpha)) * 255;
+		//out_img[4 * index + 2] = (val0.z*alpha + val1.z*(1 - alpha)) * 255;
+		//out_img[4 * index + 3] = 255;
 		return;
 	}
 
@@ -152,37 +165,38 @@ BLEND_RIGHT:
 }
 //cuda  blender
 
-extern "C" cudaError_t cuFinishToBlender(cudaArray *inputBuffer, float *left_map, float*right_map, float* alpha_table, int image_width, int image_height, int bd_width, dim3 thread, dim3 numBlock, unsigned char *uOutBuffer, int type)
+extern "C" cudaError_t fishEyeBlender(cudaArray *inputBuffer, float *left_map, float*right_map, float* alpha_table, int image_width, int image_height, int bd_width, dim3 thread, dim3 numBlock, unsigned char *uOutBuffer, int type, bool paramsChanged)
 {
 	cudaError_t ret = cudaSuccess;
-	tex.addressMode[0] = cudaAddressModeClamp;
-	tex.addressMode[1] = cudaAddressModeClamp;
-	tex.normalized = false;
-	tex.filterMode = cudaFilterModeLinear;
 
-	checkError(cudaBindTextureToArray(tex, inputBuffer));
-	
+	if (paramsChanged)
+	{
+		tex.addressMode[0] = cudaAddressModeClamp;
+		tex.addressMode[1] = cudaAddressModeClamp;
+		tex.normalized = false;
+		tex.filterMode = cudaFilterModeLinear;
+		ret = cudaBindTextureToArray(tex, inputBuffer);
+		if (cudaSuccess != ret)
+		{
+			LOGERR("Description:%s, Error Code: %d", cudaGetErrorString(ret), ret);
+			return ret;
+		}
+	}
+
 	if (type == 1)
 	{
-		panoramicBlender << <numBlock, thread >> >(bd_width, image_width, left_map, right_map, alpha_table, uOutBuffer);
+		panoramicBlender << <numBlock, thread >> >(bd_width, image_width, image_height, left_map, right_map, alpha_table, uOutBuffer);
 	}
 	else
 	{
 		threeDBlender << <numBlock, thread >> >(image_width, image_height, left_map, right_map, uOutBuffer);
 	}
+	ret = cudaDeviceSynchronize();
+	if (cudaSuccess != ret)
+	{
+		LOGERR("Description:%s, Error Code: %d", cudaGetErrorString(ret), ret);
+		return ret;
+	}
 
 	return ret;
-
-}
-
-// Convert RGB(BGR) to RGBA(BGRA)
-__global__ void add_alpha_channel(unsigned char* input, unsigned char* output)
-{
-
-}
-
-// Convert RGBA(BGRA) to RGB(BGR)
-__global__ void remove_alpha_channel(unsigned char* input, unsigned char* output)
-{
-
-}
+} 

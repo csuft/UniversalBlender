@@ -1,5 +1,4 @@
-﻿#define _CRT_SECURE_NO_WARNINGS
-#ifndef _TT_LOG_H_
+﻿#ifndef _TT_LOG_H_
 #define _TT_LOG_H_
 
 #include <stdarg.h>
