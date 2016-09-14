@@ -20,27 +20,17 @@ __global__ void threeDBlender(int image_width, int image_height, float *left_map
 	int x = (blockIdx.x * blockDim.x) + threadIdx.x;
 	int y = (blockIdx.y * blockDim.y) + threadIdx.y;
 
-	if (x > image_width)
-	{
-		x = image_width - 1;
-	}
-
-	if (y > image_height)
-	{
-		y = image_height - 1;
-	}
-
 	int index = y * image_width + x;
 	int pivot = image_width / 2;  
 	float* location = nullptr;
 
 	if (x < pivot)
 	{
-		location = left_map + (index + pivot)* 2;
+		location = left_map + (index )* 2;
 	}
 	else
 	{
-		location = left_map + (index - pivot) * 2;
+		location = left_map + (index ) * 2;
 	}
 	// 左右半圆形设置为黑色
 	int tempX = (int)location[0];
@@ -68,15 +58,6 @@ __global__ void panoramicBlender(int blend_width, int image_width, int image_hei
 {
 	int x = (blockIdx.x * blockDim.x) + threadIdx.x;
 	int y = (blockIdx.y * blockDim.y) + threadIdx.y;
-
-	if (x > image_width)
-	{
-		x = image_width - 1;
-	}
-	if (y > image_height)
-	{
-		y = image_height - 1;
-	}
 
 	int index = (y * image_width + x)>>1; 
 	int left_start = image_width >> 2;
@@ -136,10 +117,10 @@ BLEND_LEFT:
 		float4 val0 = tex2D(tex, location[0], location[1]);
 		float4 val1 = tex2D(tex, location1[0], location1[1]);
 
-		//out_img[4 * index + 0] = (val0.x*alpha + val1.x*(1 - alpha)) * 255;
-		//out_img[4 * index + 1] = (val0.y*alpha + val1.y*(1 - alpha)) * 255;
-		//out_img[4 * index + 2] = (val0.z*alpha + val1.z*(1 - alpha)) * 255;
-		//out_img[4 * index + 3] = 255;
+		out_img[4 * index + 0] = (val0.x*alpha + val1.x*(1 - alpha)) * 255;
+		out_img[4 * index + 1] = (val0.y*alpha + val1.y*(1 - alpha)) * 255;
+		out_img[4 * index + 2] = (val0.z*alpha + val1.z*(1 - alpha)) * 255;
+		out_img[4 * index + 3] = 255;
 		return;
 	}
 
@@ -154,10 +135,10 @@ BLEND_RIGHT:
 		float4 val0 = tex2D(tex, location[0], location[1]);
 		float4 val1 = tex2D(tex, location1[0], location1[1]);
 
-		//out_img[4 * index + 0] = (val0.x*alpha + val1.x*(1 - alpha)) * 255;
-		//out_img[4 * index + 1] = (val0.y*alpha + val1.y*(1 - alpha)) * 255;
-		//out_img[4 * index + 2] = (val0.z*alpha + val1.z*(1 - alpha)) * 255;
-		//out_img[4 * index + 3] = 255;
+		out_img[4 * index + 0] = (val0.x*alpha + val1.x*(1 - alpha)) * 255;
+		out_img[4 * index + 1] = (val0.y*alpha + val1.y*(1 - alpha)) * 255;
+		out_img[4 * index + 2] = (val0.z*alpha + val1.z*(1 - alpha)) * 255;
+		out_img[4 * index + 3] = 255;
 		return;
 	}
 

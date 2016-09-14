@@ -169,8 +169,17 @@ void COpenCLBlender::setupBlender()
 	{
 		destroyBlender();
 		m_unrollMap = new UnrollMap;
-		m_unrollMap->setOffset(m_offset);
-		m_unrollMap->init(m_inputWidth, m_inputHeight, m_outputWidth, m_outputHeight, 1);
+		m_unrollMap = new UnrollMap;
+		if (m_blenderType == 1)
+		{
+			m_unrollMap->setOffset(m_offset);
+			m_unrollMap->init(m_inputWidth, m_inputHeight, m_outputWidth, m_outputHeight);
+		}
+		else
+		{
+			m_unrollMap->setOffset(m_offset, 200);
+			m_unrollMap->init(m_inputWidth, m_inputHeight, m_outputWidth, m_outputHeight, 3);
+		}
 		m_leftMapData = m_unrollMap->getMap(0);
 		m_rightMapData = m_unrollMap->getMap(1);
 		m_paramsChanged = false;

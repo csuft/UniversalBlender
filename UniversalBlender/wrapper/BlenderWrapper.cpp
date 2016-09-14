@@ -38,8 +38,8 @@ int CBlenderWrapper::capabilityAssessment()
 { 
 /*	if (isSupportCUDA())
 	{
-	m_deviceType = CUDA_BLENDER;
-	LOGINFO("CUDA compute technology is available in this platform.");
+		m_deviceType = CUDA_BLENDER;
+		LOGINFO("CUDA compute technology is available in this platform.");
 	}
 	else */if (isSupportOpenCL())
 	{
