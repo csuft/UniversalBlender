@@ -8,6 +8,7 @@
 #include <cuda.h>
 #include <cuda_texture_types.h>
 #include <vector>
+#include <cmath>
 
 class CCUDABlender : public CBaseBlender
 {

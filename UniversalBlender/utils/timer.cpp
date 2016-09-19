@@ -1,18 +1,20 @@
 
 #include "timer.h"
 
-#ifdef _WIN32
+#if (defined _WIN32 || defined _WIN64)
 #include <windows.h>
 #else
+#include <mach/clock.h>
+#include <mach/mach.h>
 #include <sys/time.h>
 #include <time.h>
-#include <pthread.h>
+#include <pthread.h> 
 #endif
 
 Timer::Timer() : _clocks(0), _start(0)
 {
 
-#ifdef _WIN32
+#if (defined _WIN32 || defined _WIN64)
     QueryPerformanceFrequency((LARGE_INTEGER *)&_freq);
 #else
     _freq = 1000;
@@ -29,11 +31,11 @@ void
 Timer::Start(void)
 {
 
-#ifdef _WIN32
+#if (defined _WIN32 || defined _WIN64)
     QueryPerformanceCounter((LARGE_INTEGER *)&_start);
 #else
     struct timespec s;
-    clock_gettime( CLOCK_REALTIME, &s );
+    current_utc_time(&s);
     _start = (i64)s.tv_sec * 1e9 + (i64)s.tv_nsec;
 #endif
 
@@ -44,11 +46,11 @@ Timer::Stop(void)
 {
     i64 n;
 
-#ifdef _WIN32
+#if (defined _WIN32 || defined _WIN64)
     QueryPerformanceCounter((LARGE_INTEGER *)&n);
 #else
     struct timespec s;
-    clock_gettime( CLOCK_REALTIME, &s );
+    current_utc_time(&s);
     n = (i64)s.tv_sec * 1e9 + (i64)s.tv_nsec;
 #endif
 
@@ -67,7 +69,7 @@ Timer::Reset(void)
 double
 Timer::GetElapsedTime(void)
 {
-#if _WIN32
+#if (defined _WIN32 || defined _WIN64)
     return (double)_clocks / (double) _freq;
 #else
     return (double)_clocks / (double) 1e9;
@@ -76,12 +78,24 @@ Timer::GetElapsedTime(void)
 }
 
 
-unsigned int Timer:: PthreadSelf()
+unsigned long Timer::PthreadSelf()
 {
-#ifdef WIN32
+#if (defined _WIN32 || defined _WIN64)
 	return  ::GetCurrentThreadId();
 #else 
-	return  thread_self();
+	return  (unsigned long)pthread_self();
 #endif 
 }
 
+void Timer::current_utc_time(struct timespec* ts)
+{
+#ifdef __MACH__ // OS X does not have clock_gettime, use clock_get_time
+  clock_serv_t cclock;
+  mach_timespec_t mts;
+  host_get_clock_service(mach_host_self(), CALENDAR_CLOCK, &cclock);
+  clock_get_time(cclock, &mts);
+  mach_port_deallocate(mach_task_self(), cclock);
+  ts->tv_sec = mts.tv_sec;
+  ts->tv_nsec = mts.tv_nsec;
+#endif
+}

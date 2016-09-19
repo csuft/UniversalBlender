@@ -6,8 +6,8 @@ COpenCLBlender::COpenCLBlender() : COpenCLBlender(2)
 
 }
 
-COpenCLBlender::COpenCLBlender(int mode) : m_inputImageSize(0), m_outputImageSize(0), m_heightFactor(0), m_widthFactor(0),
-m_inputBuffer(nullptr), m_outputBuffer(nullptr), m_openclContext(nullptr), m_program(nullptr), m_inputImage(nullptr), m_outputImage(nullptr),
+COpenCLBlender::COpenCLBlender(int mode) : m_inputImageSize(0), m_outputImageSize(0), m_widthFactor(0), m_heightFactor(0),  m_openclContext(nullptr),
+m_program(nullptr), m_inputBuffer(nullptr), m_inputImage(nullptr), m_outputBuffer(nullptr), m_outputImage(nullptr), 
 m_inputParamsBuffer(nullptr), m_leftMapBuffer(nullptr), m_rightMapBuffer(nullptr), m_commandQueue(nullptr), m_kernel(nullptr)
 {
 	memset(m_origins, 0, sizeof(int)* 3);
@@ -296,7 +296,12 @@ void COpenCLBlender::initializeDevice()
 bool COpenCLBlender::checkError(cl_int err, const char* name)
 {
 
+#ifdef __APPLE__
+	static __gnu_cxx::hash_map<int, std::string> errorCodesMap;
+#else
 	static std::hash_map<int, std::string> errorCodesMap;
+#endif
+	
 	errorCodesMap[0] = "CL_SUCCESS";
 	errorCodesMap[-1] = "CL_DEVICE_NOT_FOUND";
 	errorCodesMap[-2] = "CL_DEVICE_NOT_AVAILABLE";

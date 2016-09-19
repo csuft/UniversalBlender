@@ -3,12 +3,12 @@
 
 #include "../base/BaseBlender.h"
 
-#include <hash_map>
-
 #ifdef __APPLE__
 #include <OpenCL/cl.hpp>
 #include <OpenCL/cl_gl.h>
+#include <ext/hash_map>
 #else 
+#include <hash_map>
 #include <CL/cl.hpp>
 #include <CL/cl_gl.h>
 #endif 
@@ -33,9 +33,7 @@ private:
 	// private method member
 private:
 	unsigned int m_inputImageSize;
-	unsigned int m_outputImageSize;
-	size_t m_blendWorkSize[2];
-	size_t m_localWorkSize[2];
+	unsigned int m_outputImageSize; 
 	cl::size_t<3> m_origins;
 	cl::size_t<3> m_inputRegions;
 	cl::size_t<3> m_outputRegions;
@@ -60,8 +58,8 @@ private:
 
 static const std::string BLEND_KERNEL_STRING =
 "const sampler_t sampler = CLK_NORMALIZED_COORDS_TRUE | CLK_ADDRESS_CLAMP_TO_EDGE | CLK_FILTER_LINEAR;                                               \n"
-"__kernel  void  opencl_blend(   __read_only    image2d_t imgSrc,   //  ‰»Î                                                                          \n"
-"	                            __write_only   image2d_t imgDst,    //  ‰≥ˆ                                                                          \n"
+"__kernel  void  opencl_blend(   __read_only    image2d_t imgSrc,   // output image                                                                  \n"
+"	                            __write_only   image2d_t imgDst,    // input iamge                                                                   \n"
 "	                            __global float *fLeftMapBuffer,     // left map buffer                                                               \n"
 "	                            __global float *fRightMapBuffer,    // right map buffer                                                              \n"
 "	                            __global int   *_params,            // params                                                                        \n"

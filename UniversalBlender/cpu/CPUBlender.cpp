@@ -2,6 +2,7 @@
 
 #include <future>
 #include <vector>
+#include <cmath>
 // Using delegate constructor in C++11
 CCPUBlender::CCPUBlender() : CCPUBlender(4)
 {
@@ -354,8 +355,7 @@ void CCPUBlender::runBlender(unsigned char* input_data, unsigned char* output_da
 			unsigned char* imageData;
 			unsigned char* imageDataNext;
 			float* mapData;
-			float* curMapData;
-			float ratio = 0;
+			float* curMapData; 
 			for (int y = yStart; y < yEnd; y++)
 			{
 				int yIndex = y;
@@ -383,7 +383,7 @@ void CCPUBlender::runBlender(unsigned char* input_data, unsigned char* output_da
 						curOutImageData = outImageData + m_channels * x;
 						for (int cn = 0; cn < m_channels; cn++)
 						{
-							curOutImageData[cn] = unsigned char(ratio0 * imageData[cn] +
+							curOutImageData[cn] = (unsigned char)(ratio0 * imageData[cn] +
 								ratio1 * imageData[m_channels + cn] +
 								ratio2 * imageDataNext[cn] +
 								ratio3 * imageDataNext[m_channels + cn] + 0.5f);

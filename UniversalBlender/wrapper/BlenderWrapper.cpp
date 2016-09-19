@@ -19,7 +19,7 @@
 #include <CL/cl_gl.h>
 #endif 
 
-CBlenderWrapper::CBlenderWrapper() : m_blender(nullptr), m_deviceType(CPU_BLENDER), m_offset("")
+CBlenderWrapper::CBlenderWrapper() : m_offset(""), m_deviceType(CPU_BLENDER), m_blender(nullptr)
 {
 }
 

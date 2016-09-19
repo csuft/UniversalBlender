@@ -22,7 +22,7 @@ __global__ void threeDBlender(int image_width, int image_height, float *left_map
 
 	int index = y * image_width + x;
 	int pivot = image_width / 2;  
-	float* location = nullptr;
+	float* location = NULL;
 
 	if (x < pivot)
 	{
@@ -61,7 +61,7 @@ __global__ void panoramicBlender(int blend_width, int image_width, int image_hei
 
 	int index = (y * image_width + x)>>1; 
 	int left_start = image_width >> 2;
-	float *location = nullptr;
+	float *location = NULL;
 	//  _______________________________________________________
 	// |             | | |                  | | |              |
 	// |             | | |                  | | |              |
@@ -108,7 +108,7 @@ MAP:
 
 BLEND_LEFT:
 	{
-		float *location1 = nullptr;
+		float *location1 = NULL;
 		int plane_left = left_start - blend_width;
 		float alpha = *(alpha_table + 2 * blend_width - (x - plane_left) - 1);
 
@@ -126,7 +126,7 @@ BLEND_LEFT:
 
 BLEND_RIGHT:
 	{
-		float *location1 = nullptr;
+		float *location1 = NULL;
 		int plane_left = left_start * 3 - blend_width;
 		float alpha = *(alpha_table + (x - plane_left));
 

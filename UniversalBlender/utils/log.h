@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string>
+#include <assert.h>
 
 #if (defined _WIN32 || defined _WIN64)
 #include <windows.h>
@@ -12,6 +13,7 @@
 #include <direct.h>
 #include <io.h>
 #else
+#include <sys/stat.h> 
 #include <unistd.h>
 #include <pthread.h>
 #endif

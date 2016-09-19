@@ -1,11 +1,12 @@
 #ifndef _TIMER_H_
 #define _TIMER_H_
+
 /**
  * \file Timer.h
  * \brief A timer class that provides a cross platform timer for use
  * in timing code progress with a high degree of accuracy.
  */
-#ifdef _WIN32
+#if (defined _WIN32 || defined _WIN64)
 /**
  * \typedef __int64 i64
  * \brief Maps the windows 64 bit integer to a uniform name
@@ -33,7 +34,8 @@ public:
     void Stop(void);
     void Reset(void);
     double GetElapsedTime(void);
-	unsigned int PthreadSelf();
+	unsigned long PthreadSelf();
+    void current_utc_time(struct timespec* ts);
 private:
 
     i64 _freq;

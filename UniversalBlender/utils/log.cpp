@@ -1,21 +1,24 @@
 ﻿#include <time.h>
-#include <sys/stat.h> 
 #include "log.h" 
 
 CMyLog::CMyLog()
 : m_fp(NULL)
 , m_ulFileSize(0)
-{
-	setlocale(LC_CTYPE, "chs");
+{ 
 	m_ulFileSize = 1024 * 1024 * 5;
 	m_ucLevel = LOG_LEVEL_INFO;
 
+#ifdef _WIN64
 	m_hMutex = CreateMutex(NULL, false, NULL);
 	if (!m_hMutex)
 	{
 		printf("CreateMutex fail\r\n");
 	}
+#else
+	pthread_mutex_init(&m_mutex, NULL);
+#endif
 
+#ifdef _WIN64
 	char* home = getenv("HOMEDRIVE");
 	assert(home != NULL);
 	m_path = std::string(home);
@@ -44,7 +47,38 @@ CMyLog::CMyLog()
 
 	std::string logfile = m_path + "\\blender.log";
 	m_fp = fopen(logfile.c_str(), "a+");
+#else
+	char* home = getenv("HOME");
+	if (!home)
+	{
+		printf("Cann't get home directory\n");
+		return;
+	}
 
+	m_path = std::string(home);
+	m_path = m_path + "/Library/Application Support";
+	if (access(m_path.c_str(), 0))
+	{
+		printf("HOME/Library/Application Support directory not exist\n");
+		return;
+	}
+
+	m_path = m_path + "/insta360";
+	if (access(m_path.c_str(), 0))
+	{
+		mkdir(m_path.c_str(), 0766);
+	}
+
+	m_path = m_path + "/UniversalBlender";
+	if (access(m_path.c_str(), 0))
+	{
+		mkdir(m_path.c_str(), 0766);
+	}
+
+	std::string logfile = m_path + "/blender.log";
+	m_fp = fopen(logfile.c_str(), "a+");
+#endif 
+	
 	if (!m_fp)
 	{
 		printf("Open log file fail\r\n");
@@ -59,7 +93,12 @@ CMyLog::~CMyLog()
 		fclose(m_fp);
 	}
 
+#ifdef _WIN64
 	CloseHandle(m_hMutex);
+#else
+	pthread_mutex_destroy(&m_mutex);
+#endif
+	
 }
 
 CMyLog& CMyLog::GetInstance()
@@ -82,8 +121,12 @@ void CMyLog::Log(unsigned char level, const char* file, int line, const char* fm
 	{
 		return;
 	}
-
+#ifdef _WIN64
 	WaitForSingleObject(m_hMutex, INFINITE);
+#else
+	pthread_mutex_lock(&m_mutex);
+#endif
+	
 	time_t timer = time(NULL);
 	struct tm *tmt = localtime(&timer);
 	va_list arg;
@@ -111,7 +154,11 @@ void CMyLog::Log(unsigned char level, const char* file, int line, const char* fm
 		ChangeLogFile();
 	}
 
+#ifdef _WIN64
 	ReleaseMutex(m_hMutex);
+#else
+	pthread_mutex_unlock(&m_mutex);
+#endif 
 }
 
 void CMyLog::Log(unsigned char level, const char* str)
@@ -122,7 +169,12 @@ void CMyLog::Log(unsigned char level, const char* str)
 		return;
 	}
 
+#ifdef _WIN64
 	WaitForSingleObject(m_hMutex, INFINITE);
+#else
+	pthread_mutex_lock(&m_mutex);
+#endif
+	
 	time_t timer = time(NULL);
 	struct tm *tmt = localtime(&timer);
 	/* to log file */
@@ -142,7 +194,12 @@ void CMyLog::Log(unsigned char level, const char* str)
 		ChangeLogFile();
 	}
 
+#ifdef _WIN64
 	ReleaseMutex(m_hMutex);
+#else
+	pthread_mutex_unlock(&m_mutex);
+#endif
+	
 }
 
 void CMyLog::ChangeLogFile()

@@ -1,6 +1,12 @@
 #ifndef BLENDER_WRAPPER_H
 #define BLENDER_WRAPPER_H
 
+#ifdef _WIN64
+#define EXPORT_API __declspec(dllexport)
+#else
+#define EXPORT_API
+#endif
+
 #include <string>
 #include <mutex>
 #include <atomic>
@@ -17,8 +23,8 @@ typedef struct _BlenderParams {
 
 class CBaseBlender;
 class Timer;
-class __declspec(dllexport) 
-	CBlenderWrapper
+EXPORT_API
+class CBlenderWrapper
 {
 public: 
 	// 优先使用CUDA计算，再尝试OpenCL计算,最后考虑CPU计算
