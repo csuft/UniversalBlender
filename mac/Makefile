@@ -201,7 +201,7 @@ else
 endif
 
 libUniversalBlender.dylib: BaseBlender.o CPUBlender.o CUDABlender.o OpenCLBlender.o BlenderWrapper.o cuda_kernels.o base64.o log.o timer.o
-	$(EXEC) $(HOST_COMPILER) -dynamiclib -o $@ $+ $(LIBRARIES) $(CFLAGS) -framework opencl -install_name @loader_path/../Resources/libUniversalBlender.dylib 
+	$(EXEC) $(HOST_COMPILER) -dynamiclib -o $@ $+ $(LIBRARIES) $(CFLAGS) -framework opencl -install_name @rpath/libUniversalBlender.dylib 
 
 base64.o:base64.cpp base64.h 
 	$(EXEC) $(HOST_COMPILER) $(INCLUDES) $(CFLAGS) -o $@ -c $<
@@ -238,4 +238,4 @@ clean:
 
 .PHONY: release
 release:
-	tar -czvf $(HOME)/lib/mac/libUniversalBlender_mac_v$(VERSION).tar.gz lib
+	tar -czvf $(HOME)/lib/mac/libUniversalBlender_mac_v$(VERSION).tar.gz libUniversalBlender.dylib
