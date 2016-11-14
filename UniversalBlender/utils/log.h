@@ -11,6 +11,7 @@
 #include <windows.h>
 #include <assert.h>
 #include <direct.h>
+#include <sys/stat.h> 
 #include <io.h>
 #else
 #include <sys/stat.h> 

@@ -23,8 +23,8 @@ typedef struct _BlenderParams {
 
 class CBaseBlender;
 class Timer;
-EXPORT_API
-class CBlenderWrapper
+
+class EXPORT_API CBlenderWrapper
 {
 public: 
 	// 优先使用CUDA计算，再尝试OpenCL计算,最后考虑CPU计算
