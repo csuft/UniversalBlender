@@ -28,17 +28,18 @@ void CBaseBlender::setupBlender()
 		m_unrollMap = new UnrollMap;
 		if (m_blenderType == 1) // panoramic blender
 		{
-			m_unrollMap->setOffset(m_offset);
+			m_unrollMap->setOffset(m_offset); 
 			m_unrollMap->init(m_inputWidth, m_inputHeight, m_outputWidth, m_outputHeight);
+			m_leftMapData = m_unrollMap->getCylinderMap(0);
+			m_rightMapData = m_unrollMap->getCylinderMap(1);
 		}
 		else  // 3d blender
 		{
 			m_unrollMap->setOffset(m_offset, 200.0f);
 			m_unrollMap->init(m_inputWidth, m_inputHeight, m_outputWidth, m_outputHeight, 3);
-		}
-		
-		m_leftMapData = m_unrollMap->getMap(0);
-		m_rightMapData = m_unrollMap->getMap(1);
+			m_leftMapData = m_unrollMap->getMap(0);
+			m_rightMapData = m_unrollMap->getMap(1);
+		} 
 
 		m_paramsChanged = false;
 	}

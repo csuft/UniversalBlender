@@ -22,6 +22,8 @@ public:
 	void setOffset(const std::string offset, float fov = 0);
 	void init(int inWidth, int inHeight, int outWidth, int outHeight, int type = 1);
 	float* getMap(int index);
+	float* getCylinderMap(int index);
+	int getCylinderHeight(int outWidth, float fov = 130.0f);
 private:
 	UnrollMapImpl* unrollMapImpl;
 };

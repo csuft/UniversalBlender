@@ -84,7 +84,7 @@ void COpenCLBlender::runBlender(unsigned char* input_data, unsigned char* output
 	// Step 8: Run the kernels
 	// parameters need to be fixed.
 	err = m_commandQueue->enqueueWriteImage(*m_inputImage, CL_TRUE, m_origins, m_inputRegions, 0, 0, inBuffer, nullptr, &event);
-	err = m_commandQueue->enqueueNDRangeKernel(*m_kernel, cl::NullRange, cl::NDRange(m_outputWidth, m_outputHeight), cl::NDRange(16, 16), nullptr, &event);
+	err = m_commandQueue->enqueueNDRangeKernel(*m_kernel, cl::NullRange, cl::NDRange(m_outputWidth, 608), cl::NDRange(16, 16), nullptr, &event);
 	checkError(err, "CommandQueue::enqueueNDRangeKernel()");
 	event.wait();
 	err = m_commandQueue->enqueueReadImage(*m_outputImage, CL_TRUE, m_origins, m_outputRegions, 0, 0, outBuffer, 0, &event);
@@ -167,21 +167,23 @@ void COpenCLBlender::setupBlender()
 	cl_int err;
 	if (m_paramsChanged)
 	{
-		destroyBlender();
-		m_unrollMap = new UnrollMap;
+		destroyBlender(); 
 		m_unrollMap = new UnrollMap;
 		if (m_blenderType == 1)
 		{
-			m_unrollMap->setOffset(m_offset);
+			m_unrollMap->setOffset(m_offset); 
 			m_unrollMap->init(m_inputWidth, m_inputHeight, m_outputWidth, m_outputHeight);
+			m_leftMapData = m_unrollMap->getCylinderMap(0);
+			m_rightMapData = m_unrollMap->getCylinderMap(1);
 		}
 		else
 		{
 			m_unrollMap->setOffset(m_offset, 200);
 			m_unrollMap->init(m_inputWidth, m_inputHeight, m_outputWidth, m_outputHeight, 3);
+			m_leftMapData = m_unrollMap->getMap(0);
+			m_rightMapData = m_unrollMap->getMap(1);
 		}
-		m_leftMapData = m_unrollMap->getMap(0);
-		m_rightMapData = m_unrollMap->getMap(1);
+		
 		m_paramsChanged = false;
 
 		// Step 7: Create buffers for kernels
