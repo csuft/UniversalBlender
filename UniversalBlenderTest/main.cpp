@@ -226,8 +226,8 @@ void convert(const char* path)
 int main(void)
 {
 	//convert("3d.jpg");
-	//testCPU();
-	testOpenCL();
+	testCPU();
+	//testOpenCL();
 	//testCUDA();
 	//test_RGBA2RGB();
 	//test_RGB2RGBA();
