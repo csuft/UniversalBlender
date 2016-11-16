@@ -26,20 +26,27 @@ void CBaseBlender::setupBlender()
 			m_rightMapData = nullptr;
 		}
 		m_unrollMap = new UnrollMap;
-		if (m_blenderType == 1) // panoramic blender
+		if (m_blenderType == 1)    // panoramic blender
 		{
 			m_unrollMap->setOffset(m_offset); 
 			m_unrollMap->init(m_inputWidth, m_inputHeight, m_outputWidth, m_outputHeight);
-			m_leftMapData = m_unrollMap->getCylinderMap(0);
-			m_rightMapData = m_unrollMap->getCylinderMap(1);
+			m_leftMapData = m_unrollMap->getMap(0);
+			m_rightMapData = m_unrollMap->getMap(1);
 		}
-		else  // 3d blender
+		else if(m_blenderType == 2)// 3d blender
 		{
 			m_unrollMap->setOffset(m_offset, 200.0f);
 			m_unrollMap->init(m_inputWidth, m_inputHeight, m_outputWidth, m_outputHeight, 3);
 			m_leftMapData = m_unrollMap->getMap(0);
 			m_rightMapData = m_unrollMap->getMap(1);
-		} 
+		}
+		else                       // panoramic cylinder blender
+		{
+			m_unrollMap->setOffset(m_offset);
+			m_unrollMap->init(m_inputWidth, m_inputHeight, m_outputWidth, m_outputHeight);
+			m_leftMapData = m_unrollMap->getCylinderMap(0);
+			m_rightMapData = m_unrollMap->getCylinderMap(1);
+		}
 
 		m_paramsChanged = false;
 	}
@@ -72,6 +79,11 @@ bool CBaseBlender::setParams(const unsigned int iw, const unsigned int ih, const
 	m_blenderType = type;
 
 	return true;
+}
+
+int CBaseBlender::getCylinderOutputHeight(int output_width, float fov)
+{ 
+	return UnrollMap::getCylinderHeight(output_width, fov);
 }
 
 /**

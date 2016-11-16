@@ -36,21 +36,22 @@ CBlenderWrapper::~CBlenderWrapper()
 
 int CBlenderWrapper::capabilityAssessment()
 { 
-	//if (isSupportCUDA())
-	//{
-	//	m_deviceType = CUDA_BLENDER;
-	//	LOGINFO("CUDA compute technology is available in this platform.");
-	//}
-	//else if (isSupportOpenCL())
-	//{
+	/*	if (isSupportCUDA())
+		{
+		m_deviceType = CUDA_BLENDER;
+		LOGINFO("CUDA compute technology is available in this platform.");
+		}
+		else*/ 
+	if (isSupportOpenCL())
+	{
 		m_deviceType = OPENCL_BLENDER;
 		LOGINFO("OpenCL compute technology is available in this platform.");
-	//}
-	//else
-	//{
-	//	m_deviceType = CPU_BLENDER;
-	//	LOGINFO("Only CPU is available in this platform.");
-	//}
+	}
+	else
+	{
+		m_deviceType = CPU_BLENDER;
+		LOGINFO("Only CPU is available in this platform.");
+	}
 	
 	return m_deviceType;
 }
@@ -214,6 +215,12 @@ bool CBlenderWrapper::runImageBlender(BlenderParams& params, BLENDER_TYPE type)
 		}
 	}
 	return false;
+}
+
+// 暴露接口给客户端代码调用，以便panoramic cylinder mode下能够提前获取输出高度
+int CBlenderWrapper::getCylinderOutputHeight(int output_width, float fov)
+{
+	return CBaseBlender::getCylinderOutputHeight(output_width, fov);
 }
 
 bool CBlenderWrapper::checkParameters(BlenderParams& params)

@@ -98,13 +98,14 @@ void testOpenCL()
 {
 	std::string offset = "2_748.791_759.200_758.990_0.000_0.000_90.000_742.211_2266.919_750.350_-0.300_0.100_90.030_3040_1520_1026";
 	cv::Mat inputImage = cv::imread("input.jpg");
-	cv::Mat outputImage(OUTPUT_WIDTH*0.3, OUTPUT_WIDTH, CV_8UC3);
+	int outputHeight = CBlenderWrapper::getCylinderOutputHeight(OUTPUT_WIDTH);
+	cv::Mat outputImage(outputHeight, OUTPUT_WIDTH, CV_8UC3);
 
 	BlenderParams params;
 	params.input_width = inputImage.cols;
 	params.input_height = inputImage.rows;
 	params.output_width = OUTPUT_WIDTH;
-	params.output_height = OUTPUT_WIDTH*0.3;
+	params.output_height = outputHeight;
 	params.offset = offset;
 	params.input_data = inputImage.data;
 	params.output_data = outputImage.data;
@@ -117,7 +118,7 @@ void testOpenCL()
 	wrapper->capabilityAssessment();
 	wrapper->getSingleInstance(CBlenderWrapper::THREE_CHANNELS);
 	wrapper->initializeDevice();
-	wrapper->runImageBlender(params, CBlenderWrapper::PANORAMIC_BLENDER);
+	wrapper->runImageBlender(params, CBlenderWrapper::PANORAMIC_CYLINDER_BLENDER);
 	 
 	cv::imwrite("BlenderResult_OpenCL.jpg", outputImage);
 
@@ -128,13 +129,14 @@ void testCPU()
 {
 	std::string offset = "2_748.791_759.200_758.990_0.000_0.000_90.000_742.211_2266.919_750.350_-0.300_0.100_90.030_3040_1520_1026";
 	cv::Mat inputImage = cv::imread("input.jpg");
-	cv::Mat outputImage(OUTPUT_WIDTH*0.3, OUTPUT_WIDTH, CV_8UC3);
-
+	int outputHeight = CBlenderWrapper::getCylinderOutputHeight(OUTPUT_WIDTH);
+	cv::Mat outputImage(outputHeight, OUTPUT_WIDTH, CV_8UC3); 
+	
 	BlenderParams params;
 	params.input_width = inputImage.cols;
 	params.input_height = inputImage.rows;
 	params.output_width = OUTPUT_WIDTH;
-	params.output_height = OUTPUT_WIDTH*0.3;
+	params.output_height = outputHeight;
 	params.offset = offset;
 	params.input_data = inputImage.data;
 	params.output_data = outputImage.data;
@@ -147,8 +149,9 @@ void testCPU()
 	wrapper->capabilityAssessment();
 	wrapper->getSingleInstance(CBlenderWrapper::THREE_CHANNELS);
 	wrapper->initializeDevice();
-	wrapper->runImageBlender(params, CBlenderWrapper::PANORAMIC_BLENDER);
+	wrapper->runImageBlender(params, CBlenderWrapper::PANORAMIC_CYLINDER_BLENDER);
 
+	
 	cv::imwrite("BlenderResult_CPU.jpg", outputImage);
 
 	delete wrapper;

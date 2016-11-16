@@ -47,6 +47,21 @@ COpenCLBlender::~COpenCLBlender()
 	destroyBlender();
 } 
 
+/** 
+ * 因为OpenCL要求work group的Range上下限都要是16的倍数，当图片的宽高不是16的倍数时，需要找到一个最大不大于宽高的16的倍数。
+ * 否则会出现OUT_OF_RESOURCE或者INVALID_WORK_GROUP_SIZE异常
+ */
+int COpenCLBlender::findNearestNumber(unsigned int max)
+{
+	const int FACTOR = 16;
+	int result = 0;
+	while (result <= max)
+	{
+		result += FACTOR;
+	}
+	return (result - FACTOR);
+}
+
 void COpenCLBlender::runBlender(unsigned char* input_data, unsigned char* output_data)
 {
 	cl_int err;
@@ -84,7 +99,7 @@ void COpenCLBlender::runBlender(unsigned char* input_data, unsigned char* output
 	// Step 8: Run the kernels
 	// parameters need to be fixed.
 	err = m_commandQueue->enqueueWriteImage(*m_inputImage, CL_TRUE, m_origins, m_inputRegions, 0, 0, inBuffer, nullptr, &event);
-	err = m_commandQueue->enqueueNDRangeKernel(*m_kernel, cl::NullRange, cl::NDRange(m_outputWidth, 608), cl::NDRange(16, 16), nullptr, &event);
+	err = m_commandQueue->enqueueNDRangeKernel(*m_kernel, cl::NullRange, cl::NDRange(m_outputWidth, m_nearestNum), cl::NDRange(16, 16), nullptr, &event);
 	checkError(err, "CommandQueue::enqueueNDRangeKernel()");
 	event.wait();
 	err = m_commandQueue->enqueueReadImage(*m_outputImage, CL_TRUE, m_origins, m_outputRegions, 0, 0, outBuffer, 0, &event);
@@ -173,17 +188,27 @@ void COpenCLBlender::setupBlender()
 		{
 			m_unrollMap->setOffset(m_offset); 
 			m_unrollMap->init(m_inputWidth, m_inputHeight, m_outputWidth, m_outputHeight);
-			m_leftMapData = m_unrollMap->getCylinderMap(0);
-			m_rightMapData = m_unrollMap->getCylinderMap(1);
+			m_leftMapData = m_unrollMap->getMap(0);
+			m_rightMapData = m_unrollMap->getMap(1);
+			m_nearestNum = m_outputHeight;
 		}
-		else
+		else if (m_blenderType == 2)
 		{
 			m_unrollMap->setOffset(m_offset, 200);
 			m_unrollMap->init(m_inputWidth, m_inputHeight, m_outputWidth, m_outputHeight, 3);
 			m_leftMapData = m_unrollMap->getMap(0);
 			m_rightMapData = m_unrollMap->getMap(1);
+			m_nearestNum = m_outputHeight;
 		}
-		
+		else
+		{
+			m_unrollMap->setOffset(m_offset);
+			m_unrollMap->init(m_inputWidth, m_inputHeight, m_outputWidth, m_outputHeight);
+			m_leftMapData = m_unrollMap->getCylinderMap(0);
+			m_rightMapData = m_unrollMap->getCylinderMap(1);
+			m_nearestNum = findNearestNumber(m_outputHeight); 
+		}
+		 
 		m_paramsChanged = false;
 
 		// Step 7: Create buffers for kernels
