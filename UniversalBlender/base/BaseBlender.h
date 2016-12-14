@@ -13,6 +13,7 @@ public:
 	explicit CBaseBlender();
 	virtual ~CBaseBlender();
 
+	static int getCylinderOutputHeight(int output_width, float fov);
 	virtual void setupBlender();
 	virtual void runBlender(unsigned char* input_data, unsigned char* output_data) = 0;
 	virtual void destroyBlender() = 0;
@@ -26,7 +27,7 @@ protected:
 	void RGBA2RGB(unsigned char* rgb, unsigned char* rgba, int imageSize);
 	void RGB2RGBA(unsigned char* rgba, unsigned char* rgb, int imageSize);
 	void startTimer();
-	void stopTimer(const char* operation);
+	void stopTimer(const char* operation); 
 
 protected:
 	Timer m_timer;
@@ -40,7 +41,7 @@ protected:
 	unsigned int m_outputWidth;
 	unsigned int m_outputHeight;
 	std::string m_offset;
-	// 1:双鱼眼全景展开map， 2:180度3d展开map， 3：双鱼眼全景展开map，且都位于中间
+	// 1:双鱼眼全景展开map， 2:3d展开map， 3：双鱼眼全景展开map，畸变较小
 	int m_blenderType;
 	// 表征参数是否发生改变，如果发生改变则需要重新初始化Map实例
 	bool m_paramsChanged; 

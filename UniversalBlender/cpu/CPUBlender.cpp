@@ -50,7 +50,8 @@ void CCPUBlender::runBlender(unsigned char* input_data, unsigned char* output_da
 	}
 
 	startTimer();
-	if (m_blenderType == 1)
+	// Panoramic blender mode is the same as panoramic cylinder blender mode
+	if (m_blenderType == 1 || m_blenderType == 3)
 	{
 		m_blendWidth = 5 * m_outputWidth / 360;
 		int m_start1, m_start2, m_end1, m_end2;
@@ -340,7 +341,7 @@ void CCPUBlender::runBlender(unsigned char* input_data, unsigned char* output_da
 			threads[i].get();
 		}
 	}
-	else
+	else if (m_blenderType == 2 || m_blenderType == 4)
 	{
 		memset(tempBuffer, 0, m_outputWidth * m_outputHeight * m_channels * sizeof(unsigned char));
 		auto fun = [&](int yStart, int yEnd)

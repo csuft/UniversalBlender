@@ -29,7 +29,7 @@ public:
 	//private data member
 private:
 	inline bool checkError(cl_int err, const char* name);
-	
+	int findNearestNumber(unsigned int max);
 	// private method member
 private:
 	unsigned int m_inputImageSize;
@@ -54,6 +54,9 @@ private:
 
 	cl::CommandQueue* m_commandQueue;
 	cl::Kernel* m_kernel;
+
+	// Nearest number
+	int m_nearestNum;
 };
 
 static const std::string BLEND_KERNEL_STRING =
@@ -70,7 +73,7 @@ static const std::string BLEND_KERNEL_STRING =
 "	int gidx = get_global_id(0);                                                                                                                     \n"
 "	int gidy = get_global_id(1);                                                                                                                     \n"
 "	int2  coord = (int2)(gidx, gidy);                                                                                                                \n"
-"   if (type == 1) // Panoramic Blender                                                                                                              \n"
+"   if (type == 1 || type == 3) // Panoramic Blender is the same as panoramic cylinder blender mode                                                  \n"
 "	{                                                                                                                                                \n"
 "		int   blendr_start1  = _params[0];                                                                                                           \n"
 "		int   blendr_end1    = _params[1];                                                                                                           \n"
@@ -133,17 +136,9 @@ static const std::string BLEND_KERNEL_STRING =
 "	}	                                                                                                                                             \n"
 "   else if (type == 2) // 3D Blender                                                                                                                \n"
 "	{                                                                                                                                                \n"
-"		int centerWidth    = _params[4] / 2;                                                                                                         \n"
+"		int centerWidth  = _params[4] / 2;                                                                                                         \n"
 "		float4 colour = (float4)(0, 0, 0, 255);                                                                                                      \n"
-"		int pointer;																							                                     \n"
-"		if (gidx < centerWidth)                                                                                                                      \n"
-"		{                                                                                                                                            \n"
-"			pointer = gidy * centerWidth * 2 + 2 * (gidx);                                                                                           \n"
-"		}                                                                                                                                            \n"
-"		else                                                                                                                                         \n"
-"		{                                                                                                                                            \n"
-"			pointer = gidy * centerWidth * 2 + 2 * (gidx);                                                                                           \n"
-"		}                                                                                                                                            \n"
+"		int	pointer = gidy * centerWidth * 2 + 2 * (gidx);                                                                                           \n"
 "		int  coordU = fLeftMapBuffer[pointer];                                                                                                       \n"
 "		int  coordV = fLeftMapBuffer[pointer + 1];                                                                                                   \n"
 "		if (coordU != -1 && coordV != -1)                                                                                                            \n"
@@ -157,6 +152,21 @@ static const std::string BLEND_KERNEL_STRING =
 "	}                                                                                                                                                \n"
 "	else                                                                                                                                             \n"
 "	{                                                                                                                                                \n"
+"       int centerHeight    = _params[5] / 2;                                                                                                        \n"
+"       int width = _params[4]/2;                                                                                                                    \n"
+"       float4 colour = (float4)(0, 0, 0, 255);                                                                 								     \n"
+"       int	pointer, coordU, coordV;                                                                            								     \n"
+"       pointer = gidy * width * 2 + 2 * (gidx);                                                         								             \n"
+"	    coordU = fLeftMapBuffer[pointer];                                                                    								         \n"
+"       coordV = fLeftMapBuffer[pointer + 1];                                                                								         \n"
+"       if (coordU != -1 && coordV != -1)                                                                       								     \n"
+"       {                                                                                                       								     \n"
+"	       float2 coordinate = (float2)(coordU, coordV);                                                        								     \n"
+"	       float2  normalizedCoordinate = convert_float2(coordinate) *(float2)(fwidthFactor, fheightFactor);    								     \n"
+"	       colour = read_imagef(imgSrc, sampler, normalizedCoordinate);                                         								     \n"
+"       }                                                                                                       								     \n"
+"                                                                                                               								     \n"
+"       write_imagef(imgDst, coord, colour);                                                                    								     \n"
 "	}                                                                                                                                                \n"
 "	                                                                                                                                                 \n"
 "}                                                                                                                                                   \n"

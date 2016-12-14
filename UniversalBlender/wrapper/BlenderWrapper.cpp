@@ -36,12 +36,13 @@ CBlenderWrapper::~CBlenderWrapper()
 
 int CBlenderWrapper::capabilityAssessment()
 { 
-/*	if (isSupportCUDA())
-	{
-		m_deviceType = CUDA_BLENDER;
-		LOGINFO("CUDA compute technology is available in this platform.");
-	}
-	else */if (isSupportOpenCL())
+	//if (isSupportCUDA())
+	//{
+	//	m_deviceType = CUDA_BLENDER;
+	//	LOGINFO("CUDA compute technology is available in this platform.");
+	//}
+	//else
+	if (isSupportOpenCL())
 	{
 		m_deviceType = OPENCL_BLENDER;
 		LOGINFO("OpenCL compute technology is available in this platform.");
@@ -214,7 +215,7 @@ bool CBlenderWrapper::runImageBlender(BlenderParams& params, BLENDER_TYPE type)
 		}
 	}
 	return false;
-}
+} 
 
 bool CBlenderWrapper::checkParameters(BlenderParams& params)
 {

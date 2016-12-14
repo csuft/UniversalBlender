@@ -135,7 +135,6 @@ void CCUDABlender::runBlender(unsigned char* input_data, unsigned char* output_d
 	}
 
 	startTimer();
-	LOGINFO("m_inputWidth: %d, m_inputHeight: %d, m_inputImageSize: %d, m_channels: %d", m_inputWidth, m_inputHeight, m_inputImageSize, m_channels);
 	
 	if (m_paramsChanged)
 	{
@@ -155,7 +154,6 @@ void CCUDABlender::runBlender(unsigned char* input_data, unsigned char* output_d
 	}
 
 	m_paramsChanged = false;
-	LOGINFO("m_outputWidth: %d, m_outputHeight: %d, m_outputImageSize: %d, m_channels: %d", m_outputHeight, m_outputWidth, m_outputImageSize, m_channels);
 	err = cudaMemcpy(outBuffer, m_cudaOutputBuffer, m_outputImageSize * sizeof(uchar4), cudaMemcpyDeviceToHost);
 	if (err != cudaSuccess)
 	{
