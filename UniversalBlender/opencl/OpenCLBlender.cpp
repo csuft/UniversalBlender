@@ -223,10 +223,12 @@ void COpenCLBlender::setupBlender()
 		cl_channel_type image_channel_data_type = m_channels > 3 ? CL_UNORM_INT8 : CL_UNORM_SHORT_565;
 
 		cl::ImageFormat image_format(image_channel_order, image_channel_data_type);
-		m_inputBuffer = new unsigned char[m_inputImageSize * m_channels];
+		m_inputBuffer = new unsigned char[m_inputImageSize * m_channels]; 
 		m_inputImage = new cl::Image2D(*m_openclContext, CL_MEM_USE_HOST_PTR, image_format, m_inputWidth, m_inputHeight, 0, m_inputBuffer, &err);
-		m_outputBuffer = new unsigned char[m_outputImageSize * m_channels];
+		checkError(err, "cl::Image2D()");
+		m_outputBuffer = new unsigned char[m_outputImageSize * m_channels]; 
 		m_outputImage = new cl::Image2D(*m_openclContext, CL_MEM_USE_HOST_PTR, image_format, m_outputWidth, m_outputHeight, 0, m_outputBuffer, &err);
+		checkError(err, "cl::Image2D()");
 		m_inputParamsBuffer = new cl::Buffer(*m_openclContext, CL_MEM_COPY_HOST_PTR, sizeof(int)* 16, m_inputParams, &err);
 		m_leftMapBuffer = new cl::Buffer(*m_openclContext, CL_MEM_COPY_HOST_PTR, sizeof(float)*m_outputImageSize * 2, m_leftMapData, &err);
 		m_rightMapBuffer = new cl::Buffer(*m_openclContext, CL_MEM_USE_HOST_PTR, sizeof(float)*m_outputImageSize * 2, m_rightMapData, &err);
@@ -296,17 +298,28 @@ bool COpenCLBlender::setParams(const unsigned int iw, const unsigned int ih, con
 
 void COpenCLBlender::initializeDevice()
 {
-	cl_int err;
+	cl_int err; 
 	// Step 1: Get platform list
 	std::vector<cl::Platform> platformList;
 	cl::Platform::get(&platformList);
 	checkError(platformList.size() != 0 ? CL_SUCCESS : -1, "cl::Platform::get");
-	LOGINFO("Platform number is: \t\t%d", platformList.size());
-
-	// Step 2: Create context for specific device type.
-	cl_context_properties cprops[3] = { CL_CONTEXT_PLATFORM, (cl_context_properties)(platformList[0])(), 0 };
-	m_openclContext = new cl::Context(CL_DEVICE_TYPE_GPU, cprops, NULL, NULL, &err);
-	checkError(err, "Context::Context()"); 
+	std::string platformVersion;
+	for (int index = 0; index < platformList.size(); ++index)
+	{ 
+		err = platformList[index].getInfo((cl_platform_info)CL_PLATFORM_VERSION, &platformVersion);
+		// OpenCL版本要求最低为1.2
+		std::size_t found = platformVersion.find("2");
+		if (found != std::string::npos)
+		{
+			// Step 2: Create context for specific device type.
+			cl_context_properties cprops[3] = { CL_CONTEXT_PLATFORM, (cl_context_properties)(platformList[index])(), 0 };
+			m_openclContext = new cl::Context(CL_DEVICE_TYPE_GPU, cprops, NULL, NULL, &err);
+			if (err == CL_SUCCESS)
+			{
+				break;
+			}
+		}
+	}  
 
 	// Step 3: Get a list of available devices
 	std::vector<cl::Device> devices;

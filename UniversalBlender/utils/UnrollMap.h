@@ -1,7 +1,7 @@
 ﻿#ifndef _UNROLLMAP_H_
 #define _UNROLLMAP_H_
 
-#if (defined _WIN32 || defined _WIN64)
+#ifdef _WIN
 #ifdef UNROLLMAP_EXPORTS
 #define UNROLLMAP_API __declspec(dllexport)
 #else

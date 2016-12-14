@@ -126,18 +126,21 @@ bool CBlenderWrapper::isSupportOpenCL()
 
 	std::string platformVendor;
 	std::string platformVersion;
-	std::string platformName;
-	std::string platformProfile;
+	std::string platformName; 
 	for (int i = 0; i < platformList.size(); ++i)
 	{
-		err = platformList[i].getInfo((cl_platform_info)CL_PLATFORM_VENDOR, &platformVendor);
-		err = platformList[i].getInfo((cl_platform_info)CL_PLATFORM_PROFILE, &platformProfile);
+		err = platformList[i].getInfo((cl_platform_info)CL_PLATFORM_VENDOR, &platformVendor); 
 		err = platformList[i].getInfo((cl_platform_info)CL_PLATFORM_NAME, &platformName);
 		err = platformList[i].getInfo((cl_platform_info)CL_PLATFORM_VERSION, &platformVersion);
-		LOGINFO("Platform vendor: \t\t%s, version: \t\t%s, name: %s, profile: %s", platformVendor.c_str(), platformVersion.c_str(), platformName.c_str(), platformProfile.c_str());
+		std::size_t found = platformVersion.find("2");
+		if (found != std::string::npos)
+		{
+			LOGINFO("Found a platform: %s, version: %s, name: %s", platformVendor.c_str(), platformVersion.c_str(), platformName.c_str());
+			return true;
+		}
 	}
-
-	return true;
+	LOGERR("OpenCL version is too low to use. Please update your GPU driver or hardware!");
+	return false;
 }
 
 // Implement singleton pattern using C++11 low level ordering constraints.
@@ -209,13 +212,26 @@ bool CBlenderWrapper::runImageBlender(BlenderParams& params, BLENDER_TYPE type)
 		bool retVal = blender->setParams(params.input_width, params.input_height, params.output_width, params.output_height, params.offset, type);
 		if (retVal)
 		{
-			blender->setupBlender();
+			blender->setupBlender(); 
 			blender->runBlender(params.input_data, params.output_data);
 			return true;
 		}
 	}
 	return false;
 } 
+
+void CBlenderWrapper::runImageBlenderComp(unsigned int input_width, unsigned int input_height, unsigned int output_width, unsigned int output_height, unsigned char* input_data, unsigned char* output_data, char* offset, BLENDER_TYPE type)
+{
+	BlenderParams params;
+	params.input_width = input_width;
+	params.input_height = input_height;
+	params.output_width = output_width;
+	params.output_height = output_height;
+	params.offset = offset;
+	params.input_data = input_data;
+	params.output_data = output_data;
+	runImageBlender(params, type);
+}
 
 bool CBlenderWrapper::checkParameters(BlenderParams& params)
 {
