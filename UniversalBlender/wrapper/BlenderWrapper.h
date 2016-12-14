@@ -1,7 +1,7 @@
 #ifndef BLENDER_WRAPPER_H
 #define BLENDER_WRAPPER_H
 
-#ifdef _WIN64
+#ifdef _WIN
 #define EXPORT_API __declspec(dllexport)
 #else
 #define EXPORT_API
@@ -60,7 +60,7 @@ public:
 	void getSingleInstance(COLOR_MODE mode);
 	void initializeDevice();
 	bool runImageBlender(BlenderParams& params, BLENDER_TYPE type); 
-
+	void runImageBlenderComp(unsigned int input_width, unsigned int input_height, unsigned int output_width, unsigned int output_height, unsigned char* input_data, unsigned char* output_data, char* offset, BLENDER_TYPE type);
 private:
 	bool checkParameters(BlenderParams& params);
 	bool isSupportCUDA();

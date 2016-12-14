@@ -217,6 +217,19 @@ bool CBlenderWrapper::runImageBlender(BlenderParams& params, BLENDER_TYPE type)
 	return false;
 } 
 
+void CBlenderWrapper::runImageBlenderComp(unsigned int input_width, unsigned int input_height, unsigned int output_width, unsigned int output_height, unsigned char* input_data, unsigned char* output_data, char* offset, BLENDER_TYPE type)
+{
+	BlenderParams params;
+	params.input_width = input_width;
+	params.input_height = input_height;
+	params.output_width = output_width;
+	params.output_height = output_height;
+	params.offset = offset;
+	params.input_data = input_data;
+	params.output_data = output_data;
+	runImageBlender(params, type);
+}
+
 bool CBlenderWrapper::checkParameters(BlenderParams& params)
 {
 	if (params.input_width <= 0 || params.input_height <= 0 || params.input_data == nullptr)
