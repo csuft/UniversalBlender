@@ -40,6 +40,12 @@ void CBaseBlender::setupBlender()
 			m_leftMapData = m_unrollMap->getMap(0);
 			m_rightMapData = m_unrollMap->getMap(1);
 		}
+		else if (m_blenderType == 4)
+		{
+			m_unrollMap->setOffset(m_offset);
+			m_unrollMap->init(m_inputWidth, m_inputHeight, m_outputWidth, m_outputHeight, 4);
+			m_leftMapData = m_unrollMap->get3DMap();
+		}
 		else                       // panoramic cylinder blender
 		{
 			m_unrollMap->setOffset(m_offset);

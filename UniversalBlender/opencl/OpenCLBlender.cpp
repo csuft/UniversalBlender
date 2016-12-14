@@ -200,6 +200,13 @@ void COpenCLBlender::setupBlender()
 			m_rightMapData = m_unrollMap->getMap(1);
 			m_nearestNum = m_outputHeight;
 		}
+		else if (m_blenderType == 4)
+		{
+			m_unrollMap->setOffset(m_offset);
+			m_unrollMap->init(m_inputWidth, m_inputHeight, m_outputWidth, m_outputHeight, 4);
+			m_leftMapData = m_unrollMap->get3DMap();
+			m_nearestNum = m_outputHeight;
+		}
 		else
 		{
 			m_unrollMap->setOffset(m_offset);
@@ -277,6 +284,7 @@ bool COpenCLBlender::setParams(const unsigned int iw, const unsigned int ih, con
 		m_inputParams[2] = (m_outputWidth * 3 / 4) - (blenderWidth >> 1);   // Right Blender Start
 		m_inputParams[3] = m_inputParams[2] + blenderWidth;                 // Right Blender End
 		m_inputParams[4] = m_outputWidth * 2;
+		m_inputParams[5] = m_outputHeight * 2;
 
 		// To indicate the parameters have changed.
 		m_paramsChanged = true;

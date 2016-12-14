@@ -38,7 +38,8 @@ public:
 	enum BLENDER_TYPE {
 		PANORAMIC_BLENDER			= 1,
 		THREEDIMENSION_BLENDER		= 2,
-		PANORAMIC_CYLINDER_BLENDER	= 3
+		PANORAMIC_CYLINDER_BLENDER	= 3,
+		THREEDIMENSION_TWOLENS_BLENDER = 4
 	};
 	// 1: 3通道进，3通道出
 	// 2: 4通道进，4通道出
@@ -58,8 +59,7 @@ public:
 	int capabilityAssessment();
 	void getSingleInstance(COLOR_MODE mode);
 	void initializeDevice();
-	bool runImageBlender(BlenderParams& params, BLENDER_TYPE type);
-	static int getCylinderOutputHeight(int output_width, float fov = 130.0f);
+	bool runImageBlender(BlenderParams& params, BLENDER_TYPE type); 
 
 private:
 	bool checkParameters(BlenderParams& params);

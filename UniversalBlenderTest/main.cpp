@@ -96,16 +96,16 @@ void testCUDA()
 
 void testOpenCL()
 {
-	std::string offset = "2_748.791_759.200_758.990_0.000_0.000_90.000_742.211_2266.919_750.350_-0.300_0.100_90.030_3040_1520_1026";
-	cv::Mat inputImage = cv::imread("input.jpg");
-	int outputHeight = CBlenderWrapper::getCylinderOutputHeight(OUTPUT_WIDTH);
-	cv::Mat outputImage(outputHeight, OUTPUT_WIDTH, CV_8UC3);
+	//std::string offset = "2_748.791_759.200_758.990_0.000_0.000_90.000_742.211_2266.919_750.350_-0.300_0.100_90.030_3040_1520_1026";
+	std::string offset = "2_710_718_716_0_0_0_712_2162_724_0_0_180_2880_1440_772";
+	cv::Mat inputImage = cv::imread("3.jpg"); 
+	cv::Mat outputImage(OUTPUT_WIDTH, OUTPUT_WIDTH, CV_8UC3);
 
 	BlenderParams params;
 	params.input_width = inputImage.cols;
 	params.input_height = inputImage.rows;
 	params.output_width = OUTPUT_WIDTH;
-	params.output_height = outputHeight;
+	params.output_height = OUTPUT_WIDTH;
 	params.offset = offset;
 	params.input_data = inputImage.data;
 	params.output_data = outputImage.data;
@@ -118,7 +118,7 @@ void testOpenCL()
 	wrapper->capabilityAssessment();
 	wrapper->getSingleInstance(CBlenderWrapper::THREE_CHANNELS);
 	wrapper->initializeDevice();
-	wrapper->runImageBlender(params, CBlenderWrapper::PANORAMIC_CYLINDER_BLENDER);
+	wrapper->runImageBlender(params, CBlenderWrapper::THREEDIMENSION_TWOLENS_BLENDER);
 	 
 	cv::imwrite("BlenderResult_OpenCL.jpg", outputImage);
 
@@ -127,16 +127,15 @@ void testOpenCL()
 
 void testCPU()
 {
-	std::string offset = "2_748.791_759.200_758.990_0.000_0.000_90.000_742.211_2266.919_750.350_-0.300_0.100_90.030_3040_1520_1026";
-	cv::Mat inputImage = cv::imread("input.jpg");
-	int outputHeight = CBlenderWrapper::getCylinderOutputHeight(OUTPUT_WIDTH);
-	cv::Mat outputImage(outputHeight, OUTPUT_WIDTH, CV_8UC3); 
+	std::string offset = "2_710_718_716_0_0_0_712_2162_724_0_0_180_2880_1440_772";
+	cv::Mat inputImage = cv::imread("3.jpg"); 
+	cv::Mat outputImage(OUTPUT_HEIGHT*2, OUTPUT_WIDTH, CV_8UC3); 
 	
 	BlenderParams params;
 	params.input_width = inputImage.cols;
 	params.input_height = inputImage.rows;
 	params.output_width = OUTPUT_WIDTH;
-	params.output_height = outputHeight;
+	params.output_height = OUTPUT_HEIGHT*2;
 	params.offset = offset;
 	params.input_data = inputImage.data;
 	params.output_data = outputImage.data;
@@ -149,9 +148,8 @@ void testCPU()
 	wrapper->capabilityAssessment();
 	wrapper->getSingleInstance(CBlenderWrapper::THREE_CHANNELS);
 	wrapper->initializeDevice();
-	wrapper->runImageBlender(params, CBlenderWrapper::PANORAMIC_CYLINDER_BLENDER);
+	wrapper->runImageBlender(params, CBlenderWrapper::THREEDIMENSION_TWOLENS_BLENDER);
 
-	
 	cv::imwrite("BlenderResult_CPU.jpg", outputImage);
 
 	delete wrapper;
@@ -226,8 +224,8 @@ void convert(const char* path)
 int main(void)
 {
 	//convert("3d.jpg");
-	testCPU();
-	//testOpenCL();
+	//testCPU();
+	testOpenCL();
 	//testCUDA();
 	//test_RGBA2RGB();
 	//test_RGB2RGBA();

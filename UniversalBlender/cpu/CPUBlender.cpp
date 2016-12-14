@@ -341,7 +341,7 @@ void CCPUBlender::runBlender(unsigned char* input_data, unsigned char* output_da
 			threads[i].get();
 		}
 	}
-	else
+	else if (m_blenderType == 2 || m_blenderType == 4)
 	{
 		memset(tempBuffer, 0, m_outputWidth * m_outputHeight * m_channels * sizeof(unsigned char));
 		auto fun = [&](int yStart, int yEnd)
