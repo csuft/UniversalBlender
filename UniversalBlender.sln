@@ -7,6 +7,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "UniversalBlender", "Univers
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "UniversalBlenderTest", "UniversalBlenderTest\UniversalBlenderTest.vcxproj", "{6E7D2819-5BE6-43AE-BEDD-2B09AE92CB37}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CppWrapper", "CppWrapper\CppWrapper.vcxproj", "{1BBF4BD8-C62C-48DC-8E83-95BE234443ED}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Mixed Platforms = Debug|Mixed Platforms
@@ -41,6 +43,16 @@ Global
 		{6E7D2819-5BE6-43AE-BEDD-2B09AE92CB37}.Release|Win32.Build.0 = Release|Win32
 		{6E7D2819-5BE6-43AE-BEDD-2B09AE92CB37}.Release|x64.ActiveCfg = Release|x64
 		{6E7D2819-5BE6-43AE-BEDD-2B09AE92CB37}.Release|x64.Build.0 = Release|x64
+		{1BBF4BD8-C62C-48DC-8E83-95BE234443ED}.Debug|Mixed Platforms.ActiveCfg = Debug|Win32
+		{1BBF4BD8-C62C-48DC-8E83-95BE234443ED}.Debug|Mixed Platforms.Build.0 = Debug|Win32
+		{1BBF4BD8-C62C-48DC-8E83-95BE234443ED}.Debug|Win32.ActiveCfg = Debug|Win32
+		{1BBF4BD8-C62C-48DC-8E83-95BE234443ED}.Debug|Win32.Build.0 = Debug|Win32
+		{1BBF4BD8-C62C-48DC-8E83-95BE234443ED}.Debug|x64.ActiveCfg = Debug|Win32
+		{1BBF4BD8-C62C-48DC-8E83-95BE234443ED}.Release|Mixed Platforms.ActiveCfg = Release|Win32
+		{1BBF4BD8-C62C-48DC-8E83-95BE234443ED}.Release|Mixed Platforms.Build.0 = Release|Win32
+		{1BBF4BD8-C62C-48DC-8E83-95BE234443ED}.Release|Win32.ActiveCfg = Release|Win32
+		{1BBF4BD8-C62C-48DC-8E83-95BE234443ED}.Release|Win32.Build.0 = Release|Win32
+		{1BBF4BD8-C62C-48DC-8E83-95BE234443ED}.Release|x64.ActiveCfg = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
