@@ -173,8 +173,9 @@ void CBlenderWrapper::getSingleInstance(COLOR_MODE mode)
 	} 
 }
 
-void CBlenderWrapper::initializeDevice()
+bool CBlenderWrapper::initializeDevice()
 {
+	bool ret = false;
 	CCUDABlender* cudaBlender = nullptr;
 	COpenCLBlender* openclBlender = nullptr;
 	switch (m_deviceType)
@@ -183,7 +184,7 @@ void CBlenderWrapper::initializeDevice()
 		cudaBlender = dynamic_cast<CCUDABlender*>(m_blender.load(std::memory_order_relaxed));
 		if (cudaBlender)
 		{
-			cudaBlender->initializeDevice();
+			ret = cudaBlender->initializeDevice();
 		}
 		
 		break;
@@ -191,7 +192,7 @@ void CBlenderWrapper::initializeDevice()
 		openclBlender = dynamic_cast<COpenCLBlender*>(m_blender.load(std::memory_order_relaxed));
 		if (openclBlender)
 		{
-			openclBlender->initializeDevice();
+			ret = openclBlender->initializeDevice();
 		}
 		
 		break;
@@ -201,6 +202,8 @@ void CBlenderWrapper::initializeDevice()
 	default:
 		break;
 	}
+
+	return ret;
 }
 
 // 该接口封装CPU/OPENCL/CUDA进行图像拼接渲染

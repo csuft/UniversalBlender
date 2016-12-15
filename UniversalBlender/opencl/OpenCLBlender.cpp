@@ -296,18 +296,25 @@ bool COpenCLBlender::setParams(const unsigned int iw, const unsigned int ih, con
 	return true;
 }
 
-void COpenCLBlender::initializeDevice()
+bool COpenCLBlender::initializeDevice()
 {
 	cl_int err; 
+	int index;
+	bool ret;
 	// Step 1: Get platform list
 	std::vector<cl::Platform> platformList;
 	cl::Platform::get(&platformList);
-	checkError(platformList.size() != 0 ? CL_SUCCESS : -1, "cl::Platform::get");
+	ret = checkError(platformList.size() != 0 ? CL_SUCCESS : -1, "cl::Platform::get");
+	if (!ret)
+	{
+		return false;
+	}
 	std::string platformVersion;
-	for (int index = 0; index < platformList.size(); ++index)
+	for (index = 0; index < platformList.size(); ++index)
 	{ 
 		err = platformList[index].getInfo((cl_platform_info)CL_PLATFORM_VERSION, &platformVersion);
 		// OpenCL版本要求最低为1.2
+		// 目前OpenCL的版本序列为：(1.0, 1.1, 1.2, 2.0, 2.1, 2.2)
 		std::size_t found = platformVersion.find("2");
 		if (found != std::string::npos)
 		{
@@ -320,25 +327,43 @@ void COpenCLBlender::initializeDevice()
 			}
 		}
 	}  
+	if (index == platformList.size())
+	{
+		LOGERR("No platform can be used to create OpenCL context!");
+		return false;
+	}
 
 	// Step 3: Get a list of available devices
 	std::vector<cl::Device> devices;
 	devices = m_openclContext->getInfo<CL_CONTEXT_DEVICES>();
-	checkError(devices.size() > 0 ? CL_SUCCESS : -1, "devices.size() > 0"); 
-
+	ret = checkError(devices.size() > 0 ? CL_SUCCESS : -1, "devices.size() > 0"); 
+	if (!ret)
+	{
+		return false;
+	}
 	// Step 4: Create source and program object
 	cl::Program::Sources source(1, std::make_pair(BLEND_KERNEL_STRING.c_str(), BLEND_KERNEL_STRING.length() + 1));
 	m_program = new cl::Program(*m_openclContext, source);
 	err = m_program->build(devices, "");
-	checkError(err, "Program::Build()");
+	ret = checkError(err, "Program::Build()");
+	if (!ret)
+	{
+		return false;
+	}
 
 	// Step 5: Create kernel object and set arguments
 	m_kernel = new cl::Kernel(*m_program, "opencl_blend", &err);
-	checkError(err, "Kernel::Kernel()");
+	ret = checkError(err, "Kernel::Kernel()");
+	if (!ret)
+	{
+		return false;
+	}
 
 	// Step 6: Create a one-to-one mapping command queue and execute command
 	m_commandQueue = new cl::CommandQueue(*m_openclContext, devices[0], 0, &err);
-	checkError(err, "CommandQueue::CommandQueue()"); 
+	ret = checkError(err, "CommandQueue::CommandQueue()"); 
+	
+	return ret;
 }
 
 bool COpenCLBlender::checkError(cl_int err, const char* name)

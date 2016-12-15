@@ -20,7 +20,7 @@ public:
 	COpenCLBlender(int mode);
 	~COpenCLBlender();
 
-	void initializeDevice();
+	bool initializeDevice();
 	virtual void setupBlender();
 	virtual void runBlender(unsigned char* input_data, unsigned char* output_data);
 	virtual void destroyBlender();

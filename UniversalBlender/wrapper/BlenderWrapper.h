@@ -58,7 +58,7 @@ public:
 public:
 	int capabilityAssessment();
 	void getSingleInstance(COLOR_MODE mode);
-	void initializeDevice();
+	bool initializeDevice();
 	bool runImageBlender(BlenderParams& params, BLENDER_TYPE type); 
 	void runImageBlenderComp(unsigned int input_width, unsigned int input_height, unsigned int output_width, unsigned int output_height, unsigned char* input_data, unsigned char* output_data, char* offset, BLENDER_TYPE type);
 private:
