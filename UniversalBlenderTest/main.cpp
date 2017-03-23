@@ -1,4 +1,9 @@
+#if defined(WIN32) || defined(WIN64) 
+#include <opencv2/opencv.hpp>
+#elif __APPLE__
 #include </usr/local/Cellar/opencv/2.4.13.1/include/opencv2/opencv.hpp>
+#endif
+
 #include <iostream>
 #include <string>
 

@@ -313,19 +313,15 @@ bool COpenCLBlender::initializeDevice()
 	for (index = 0; index < platformList.size(); ++index)
 	{ 
 		err = platformList[index].getInfo((cl_platform_info)CL_PLATFORM_VERSION, &platformVersion);
-		// OpenCL版本要求最低为1.2
-		// 目前OpenCL的版本序列为：(1.0, 1.1, 1.2, 2.0, 2.1, 2.2)
-		std::size_t found = platformVersion.find('2');
-		if (found != std::string::npos)
+
+		// Step 2: Create context for specific device type.
+		cl_context_properties cprops[3] = { CL_CONTEXT_PLATFORM, (cl_context_properties)(platformList[index])(), 0 };
+		m_openclContext = new cl::Context(CL_DEVICE_TYPE_GPU, cprops, NULL, NULL, &err);
+		if (err == CL_SUCCESS)
 		{
-			// Step 2: Create context for specific device type.
-			cl_context_properties cprops[3] = { CL_CONTEXT_PLATFORM, (cl_context_properties)(platformList[index])(), 0 };
-			m_openclContext = new cl::Context(CL_DEVICE_TYPE_GPU, cprops, NULL, NULL, &err);
-			if (err == CL_SUCCESS)
-			{
-				break;
-			}
+			break;
 		}
+		
 	}  
 	if (index == platformList.size())
 	{
