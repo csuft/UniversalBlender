@@ -132,13 +132,14 @@ bool CBlenderWrapper::isSupportOpenCL()
 		err = platformList[i].getInfo((cl_platform_info)CL_PLATFORM_VENDOR, &platformVendor); 
 		err = platformList[i].getInfo((cl_platform_info)CL_PLATFORM_NAME, &platformName);
 		err = platformList[i].getInfo((cl_platform_info)CL_PLATFORM_VERSION, &platformVersion);
-		std::size_t found = platformVersion.find("2");
+		std::size_t found = platformVersion.find('2');
 		if (found != std::string::npos)
 		{
-			LOGINFO("Found a platform: %s, version: %s, name: %s", platformVendor.c_str(), platformVersion.c_str(), platformName.c_str());
+			LOGINFO("Use platform: %s, version: %s, name: %s", platformVendor.c_str(), platformVersion.c_str(), platformName.c_str());
 			return true;
 		}
 	}
+
 	LOGERR("OpenCL version is too low to use. Please update your GPU driver or hardware!");
 	return false;
 }
