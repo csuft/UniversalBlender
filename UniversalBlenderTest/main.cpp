@@ -1,14 +1,12 @@
-#include <opencv2/opencv.hpp>
+#include </usr/local/Cellar/opencv/2.4.13.1/include/opencv2/opencv.hpp>
 #include <iostream>
 #include <string>
 
-#include "wrapper/BlenderWrapper.h" 
+#include "../UniversalBlender/wrapper/BlenderWrapper.h"
 
-// 输入宽高
 #define INPUT_WIDTH 4096
 #define INPUT_HEIGHT 2048
 
-// 输出宽高
 #define OUTPUT_WIDTH 2048
 #define OUTPUT_HEIGHT 1024
 
@@ -83,7 +81,7 @@ void testCUDA()
 	for (size_t i = 0; i < 1000; i++)
 	{
 		wrapper->runImageBlender(params, CBlenderWrapper::THREEDIMENSION_BLENDER);
-		sprintf_s(name, "threeinfourout_%d.dat", i);
+		sprintf(name, "threeinfourout_%zu.dat", i);
 		file = fopen(name, "wb");
 		fwrite(outputImage.data, 1, 4 * OUTPUT_WIDTH * OUTPUT_HEIGHT, file);
 		fclose(file);
@@ -99,13 +97,14 @@ void testOpenCL()
 	//std::string offset = "2_748.791_759.200_758.990_0.000_0.000_90.000_742.211_2266.919_750.350_-0.300_0.100_90.030_3040_1520_1026";
 	std::string offset = "2_710_718_716_0_0_0_712_2162_724_0_0_180_2880_1440_772";
 	cv::Mat inputImage = cv::imread("3.jpg"); 
-	cv::Mat outputImage(OUTPUT_WIDTH, OUTPUT_WIDTH, CV_8UC3);
+	cv::Mat outputImage(OUTPUT_HEIGHT, OUTPUT_WIDTH, CV_8UC3);
 
 	BlenderParams params;
+    printf("input width: %d, input height: %d", inputImage.cols, inputImage.rows);
 	params.input_width = inputImage.cols;
 	params.input_height = inputImage.rows;
 	params.output_width = OUTPUT_WIDTH;
-	params.output_height = OUTPUT_WIDTH;
+	params.output_height = OUTPUT_HEIGHT;
 	params.offset = offset;
 	params.input_data = inputImage.data;
 	params.output_data = outputImage.data;
@@ -118,7 +117,7 @@ void testOpenCL()
 	wrapper->capabilityAssessment();
 	wrapper->getSingleInstance(CBlenderWrapper::THREE_CHANNELS);
 	wrapper->initializeDevice();
-	wrapper->runImageBlender(params, CBlenderWrapper::THREEDIMENSION_TWOLENS_BLENDER);
+	wrapper->runImageBlender(params, CBlenderWrapper::PANORAMIC_BLENDER);
 	 
 	cv::imwrite("BlenderResult_OpenCL.jpg", outputImage);
 
