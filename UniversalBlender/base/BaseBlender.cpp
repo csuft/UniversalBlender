@@ -154,7 +154,6 @@ void CBaseBlender::splitOffset(std::string& s, char delim, std::vector< std::str
 */
 bool CBaseBlender::isOffsetValid(std::string& _offset)
 {
-	LOGINFO("Offset: %s", _offset.c_str());
 	// to be fix
 	//////////////////////////////////////////////////////////////////////////
 	std::string temp;
