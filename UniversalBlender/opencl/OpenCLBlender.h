@@ -5,10 +5,8 @@
 
 #ifdef __APPLE__
 #include <OpenCL/cl.hpp>
-#include <OpenCL/cl_gl.h>
-#include <ext/hash_map>
-#else 
-#include <hash_map>
+#include <OpenCL/cl_gl.h> 
+#else  
 #include <CL/cl.hpp>
 #include <CL/cl_gl.h>
 #endif 
@@ -29,6 +27,7 @@ public:
 	//private data member
 private:
 	inline bool checkError(cl_int err, const char* name);
+	const char* get_error_string(cl_int err);
 	int findNearestNumber(unsigned int max);
 	// private method member
 private:

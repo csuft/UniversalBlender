@@ -363,79 +363,77 @@ bool COpenCLBlender::initializeDevice()
 }
 
 bool COpenCLBlender::checkError(cl_int err, const char* name)
-{
-
-#ifdef __APPLE__
-	static __gnu_cxx::hash_map<int, std::string> errorCodesMap;
-#else
-	static std::hash_map<int, std::string> errorCodesMap;
-#endif
-	
-	errorCodesMap[0] = "CL_SUCCESS";
-	errorCodesMap[-1] = "CL_DEVICE_NOT_FOUND";
-	errorCodesMap[-2] = "CL_DEVICE_NOT_AVAILABLE";
-	errorCodesMap[-3] = "CL_COMPILER_NOT_AVAILABLE";
-	errorCodesMap[-4] = "CL_MEM_OBJECT_ALLOCATION_FAILURE";
-	errorCodesMap[-5] = "CL_OUT_OF_RESOURCES";
-	errorCodesMap[-6] = "CL_OUT_OF_HOST_MEMORY";
-	errorCodesMap[-7] = "CL_PROFILING_INFO_NOT_AVAILABLE";
-	errorCodesMap[-8] = "CL_MEM_COPY_OVERLAP";
-	errorCodesMap[-9] = "CL_IMAGE_FORMAT_MISMATCH";
-	errorCodesMap[-10] = "CL_IMAGE_FORMAT_NOT_SUPPORTED";
-	errorCodesMap[-11] = "CL_BUILD_PROGRAM_FAILURE";
-	errorCodesMap[-12] = "CL_MAP_FAILURE";
-	errorCodesMap[-13] = "CL_MISALIGNED_SUB_BUFFER_OFFSET";
-	errorCodesMap[-14] = "CL_EXEC_STATUS_ERROR_FOR_EVENTS_IN_WAIT_LIST";
-	errorCodesMap[-15] = "CL_COMPILE_PROGRAM_FAILURE";
-	errorCodesMap[-16] = "CL_LINKER_NOT_AVAILABLE";
-	errorCodesMap[-17] = "CL_LINK_PROGRAM_FAILURE";
-	errorCodesMap[-18] = "CL_DEVICE_PARTITION_FAILED";
-	errorCodesMap[-19] = "CL_KERNEL_ARG_INFO_NOT_AVAILABLE";
-	errorCodesMap[-30] = "CL_INVALID_VALUE";
-	errorCodesMap[-31] = "CL_INVALID_DEVICE_TYPE";
-	errorCodesMap[-32] = "CL_INVALID_PLATFORM";
-	errorCodesMap[-33] = "CL_INVALID_DEVICE";
-	errorCodesMap[-34] = "CL_INVALID_CONTEXT";
-	errorCodesMap[-35] = "CL_INVALID_QUEUE_PROPERTIES";
-	errorCodesMap[-36] = "CL_INVALID_COMMAND_QUEUE";
-	errorCodesMap[-37] = "CL_INVALID_HOST_PTR";
-	errorCodesMap[-38] = "CL_INVALID_MEM_OBJECT";
-	errorCodesMap[-39] = "CL_INVALID_IMAGE_FORMAT_DESCRIPTOR";
-	errorCodesMap[-40] = "CL_INVALID_IMAGE_SIZE";
-	errorCodesMap[-41] = "CL_INVALID_SAMPLER";
-	errorCodesMap[-42] = "CL_INVALID_BINARY";
-	errorCodesMap[-43] = "CL_INVALID_BUILD_OPTIONS";
-	errorCodesMap[-44] = "CL_INVALID_PROGRAM";
-	errorCodesMap[-45] = "CL_INVALID_PROGRAM_EXECUTABLE";
-	errorCodesMap[-46] = "CL_INVALID_KERNEL_NAME";
-	errorCodesMap[-47] = "CL_INVALID_KERNEL_DEFINITION";
-	errorCodesMap[-48] = "CL_INVALID_KERNEL";
-	errorCodesMap[-49] = "CL_INVALID_ARG_INDEX";
-	errorCodesMap[-50] = "CL_INVALID_ARG_VALUE";
-	errorCodesMap[-51] = "CL_INVALID_ARG_SIZE";
-	errorCodesMap[-52] = "CL_INVALID_KERNEL_ARGS";
-	errorCodesMap[-53] = "CL_INVALID_WORK_DIMENSION";
-	errorCodesMap[-54] = "CL_INVALID_WORK_GROUP_SIZE";
-	errorCodesMap[-55] = "CL_INVALID_WORK_ITEM_SIZE";
-	errorCodesMap[-56] = "CL_INVALID_GLOBAL_OFFSET";
-	errorCodesMap[-57] = "CL_INVALID_EVENT_WAIT_LIST";
-	errorCodesMap[-58] = "CL_INVALID_EVENT";
-	errorCodesMap[-59] = "CL_INVALID_OPERATION";
-	errorCodesMap[-60] = "CL_INVALID_GL_OBJECT";
-	errorCodesMap[-61] = "CL_INVALID_BUFFER_SIZE";
-	errorCodesMap[-62] = "CL_INVALID_MIP_LEVEL";
-	errorCodesMap[-63] = "CL_INVALID_GLOBAL_WORK_SIZE";
-	errorCodesMap[-64] = "CL_INVALID_PROPERTY";
-	errorCodesMap[-65] = "CL_INVALID_IMAGE_DESCRIPTOR";
-	errorCodesMap[-66] = "CL_INVALID_COMPILER_OPTIONS";
-	errorCodesMap[-67] = "CL_INVALID_LINKER_OPTIONS";
-	errorCodesMap[-68] = "CL_INVALID_DEVICE_PARTITION_COUNT";
-
+{ 
 	if (err != CL_SUCCESS)
 	{
-		LOGERR("Error: %s, Code: [%s]", name, errorCodesMap[err].c_str());
+		LOGERR("Error: %s, Code: [%s]", name, get_error_string(err));
 		return false;
 	}
 
 	return true;
+}
+
+const char * COpenCLBlender::get_error_string(cl_int err){
+	switch (err){
+	case 0: return "CL_SUCCESS";
+	case -1: return "CL_DEVICE_NOT_FOUND";
+	case -2: return "CL_DEVICE_NOT_AVAILABLE";
+	case -3: return "CL_COMPILER_NOT_AVAILABLE";
+	case -4: return "CL_MEM_OBJECT_ALLOCATION_FAILURE";
+	case -5: return "CL_OUT_OF_RESOURCES";
+	case -6: return "CL_OUT_OF_HOST_MEMORY";
+	case -7: return "CL_PROFILING_INFO_NOT_AVAILABLE";
+	case -8: return "CL_MEM_COPY_OVERLAP";
+	case -9: return "CL_IMAGE_FORMAT_MISMATCH";
+	case -10: return "CL_IMAGE_FORMAT_NOT_SUPPORTED";
+	case -11: return "CL_BUILD_PROGRAM_FAILURE";
+	case -12: return "CL_MAP_FAILURE";
+	case -13: return "CL_MISALIGNED_SUB_BUFFER_OFFSET";
+	case -14: return "CL_EXEC_STATUS_ERROR_FOR_EVENTS_IN_WAIT_LIST";
+	case -15: return "CL_COMPILE_PROGRAM_FAILURE";
+	case -16: return "CL_LINKER_NOT_AVAILABLE";
+	case -17: return "CL_LINK_PROGRAM_FAILURE";
+	case -18: return "CL_DEVICE_PARTITION_FAILED";
+	case -19: return "CL_KERNEL_ARG_INFO_NOT_AVAILABLE";
+	case -30: return "CL_INVALID_VALUE";
+	case -31: return "CL_INVALID_DEVICE_TYPE";
+	case -32: return "CL_INVALID_PLATFORM";
+	case -33: return "CL_INVALID_DEVICE";
+	case -34: return "CL_INVALID_CONTEXT";
+	case -35: return "CL_INVALID_QUEUE_PROPERTIES";
+	case -36: return "CL_INVALID_COMMAND_QUEUE";
+	case -37: return "CL_INVALID_HOST_PTR";
+	case -38: return "CL_INVALID_MEM_OBJECT";
+	case -39: return "CL_INVALID_IMAGE_FORMAT_DESCRIPTOR";
+	case -40: return "CL_INVALID_IMAGE_SIZE";
+	case -41: return "CL_INVALID_SAMPLER";
+	case -42: return "CL_INVALID_BINARY";
+	case -43: return "CL_INVALID_BUILD_OPTIONS";
+	case -44: return "CL_INVALID_PROGRAM";
+	case -45: return "CL_INVALID_PROGRAM_EXECUTABLE";
+	case -46: return "CL_INVALID_KERNEL_NAME";
+	case -47: return "CL_INVALID_KERNEL_DEFINITION";
+	case -48: return "CL_INVALID_KERNEL";
+	case -49: return "CL_INVALID_ARG_INDEX";
+	case -50: return "CL_INVALID_ARG_VALUE";
+	case -51: return "CL_INVALID_ARG_SIZE";
+	case -52: return "CL_INVALID_KERNEL_ARGS";
+	case -53: return "CL_INVALID_WORK_DIMENSION";
+	case -54: return "CL_INVALID_WORK_GROUP_SIZE";
+	case -55: return "CL_INVALID_WORK_ITEM_SIZE";
+	case -56: return "CL_INVALID_GLOBAL_OFFSET";
+	case -57: return "CL_INVALID_EVENT_WAIT_LIST";
+	case -58: return "CL_INVALID_EVENT";
+	case -59: return "CL_INVALID_OPERATION";
+	case -60: return "CL_INVALID_GL_OBJECT";
+	case -61: return "CL_INVALID_BUFFER_SIZE";
+	case -62: return "CL_INVALID_MIP_LEVEL";
+	case -63: return "CL_INVALID_GLOBAL_WORK_SIZE";
+	case -64: return "CL_INVALID_PROPERTY";
+	case -65: return "CL_INVALID_IMAGE_DESCRIPTOR";
+	case -66: return "CL_INVALID_COMPILER_OPTIONS";
+	case -67: return "CL_INVALID_LINKER_OPTIONS";
+	case -68: return "CL_INVALID_DEVICE_PARTITION_COUNT";
+	default: return "Unknown OpenCL error";
+	}
 }

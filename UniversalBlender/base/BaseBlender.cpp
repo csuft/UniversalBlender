@@ -242,12 +242,16 @@ void CBaseBlender::RGBA2RGB(unsigned char* rgb, unsigned char* rgba, int imageSi
 
 void CBaseBlender::startTimer()
 {
+#ifdef DEBUG
 	m_timer.Reset();
 	m_timer.Start();
+#endif
 }
 
 void CBaseBlender::stopTimer(const char* operation)
 {
+#ifdef DEBUG
 	m_timer.Stop();
 	LOGINFO("%s consumes %lf(ms)", operation, m_timer.GetElapsedTime()*1000);
+#endif
 }
