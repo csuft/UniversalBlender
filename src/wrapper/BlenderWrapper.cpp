@@ -3,7 +3,6 @@
 #include "../base/BaseBlender.h"
 #include "../utils/log.h"
 #include "../utils/timer.h"
-#include "../cuda/CUDABlender.h"
 #include "../opencl/OpenCLBlender.h"
 #include "../cpu/CPUBlender.h"
 
@@ -36,12 +35,6 @@ CBlenderWrapper::~CBlenderWrapper()
 
 int CBlenderWrapper::capabilityAssessment()
 { 
-	//if (isSupportCUDA())
-	//{
-	//	m_deviceType = CUDA_BLENDER;
-	//	LOGINFO("CUDA compute technology is available in this platform.");
-	//}
-	//else
 	if (isSupportOpenCL())
 	{
 		m_deviceType = OPENCL_BLENDER;
@@ -59,55 +52,55 @@ int CBlenderWrapper::capabilityAssessment()
 // Determine whether the platform support CUDA.
 bool CBlenderWrapper::isSupportCUDA()
 {
-	cudaError_t retVal = cudaSuccess;
-	int nDeviceCount, index;
-
-	retVal = cudaGetDeviceCount(&nDeviceCount);
-	if (cudaSuccess != retVal)
-	{
-		LOGERR("Error Desc:%s, Error code = %d", cudaGetErrorString(retVal), retVal);
-		return false;
-	}
-
-	cudaDeviceProp deviceProps;
-	for (index = 0; index < nDeviceCount; ++index)
-	{
-		retVal = cudaGetDeviceProperties(&deviceProps, index);
-		if (cudaSuccess != retVal)
-		{
-			LOGERR("Error Desc:%s, Error code = %d", cudaGetErrorString(retVal), retVal);
-			return false;
-		}
-		// Compute capability at least be 1.x
-		if (deviceProps.major >= 1)
-		{
-			LOGINFO("CUDA Device Info:\nName: \t\t%s\nTotalGlobalMem:\t\t%uMB\nSharedMemPerBlock:\t%dKB\nRegsPerBlock:\t\t%d\nwarpSize:\t\t\t%d\nmemPitch:\t\t\t%d\nMaxThreadPerBlock:\t%d\nMaxThreadsDim:\t\tx = %d, y = %d,z =%d\nMaxGridSize: \t\tx = %d,y = %d,z = %d\nTotalConstMem:\t\t%d\nmajor:\t\t\t\t%d\nminor:\t\t\t\t5d\nTextureAlignment:\t%d\t", 
-				deviceProps.name,
-				deviceProps.totalGlobalMem / (1024 * 1024),
-				deviceProps.sharedMemPerBlock / 1024,
-				deviceProps.regsPerBlock,
-				deviceProps.warpSize,
-				deviceProps.memPitch,
-				deviceProps.maxThreadsPerBlock,
-				deviceProps.maxThreadsDim[0],
-				deviceProps.maxThreadsDim[1],
-				deviceProps.maxThreadsDim[2],
-				deviceProps.maxGridSize[0],
-				deviceProps.maxGridSize[1],
-				deviceProps.maxGridSize[2],
-				(int)deviceProps.totalConstMem,
-				deviceProps.major,
-				deviceProps.minor,
-				(int)deviceProps.textureAlignment);
-			break;
-		}
-	}
-
-	if (index == nDeviceCount)
-	{
-		LOGERR("Could not find any available CUDA device!");
-		return false;
-	}
+//	cudaError_t retVal = cudaSuccess;
+//	int nDeviceCount, index;
+//
+//	retVal = cudaGetDeviceCount(&nDeviceCount);
+//	if (cudaSuccess != retVal)
+//	{
+//		LOGERR("Error Desc:%s, Error code = %d", cudaGetErrorString(retVal), retVal);
+//		return false;
+//	}
+//
+//	cudaDeviceProp deviceProps;
+//	for (index = 0; index < nDeviceCount; ++index)
+//	{
+//		retVal = cudaGetDeviceProperties(&deviceProps, index);
+//		if (cudaSuccess != retVal)
+//		{
+//			LOGERR("Error Desc:%s, Error code = %d", cudaGetErrorString(retVal), retVal);
+//			return false;
+//		}
+//		// Compute capability at least be 1.x
+//		if (deviceProps.major >= 1)
+//		{
+//			LOGINFO("CUDA Device Info:\nName: \t\t%s\nTotalGlobalMem:\t\t%uMB\nSharedMemPerBlock:\t%dKB\nRegsPerBlock:\t\t%d\nwarpSize:\t\t\t%d\nmemPitch:\t\t\t%d\nMaxThreadPerBlock:\t%d\nMaxThreadsDim:\t\tx = %d, y = %d,z =%d\nMaxGridSize: \t\tx = %d,y = %d,z = %d\nTotalConstMem:\t\t%d\nmajor:\t\t\t\t%d\nminor:\t\t\t\t5d\nTextureAlignment:\t%d\t", 
+//				deviceProps.name,
+//				deviceProps.totalGlobalMem / (1024 * 1024),
+//				deviceProps.sharedMemPerBlock / 1024,
+//				deviceProps.regsPerBlock,
+//				deviceProps.warpSize,
+//				deviceProps.memPitch,
+//				deviceProps.maxThreadsPerBlock,
+//				deviceProps.maxThreadsDim[0],
+//				deviceProps.maxThreadsDim[1],
+//				deviceProps.maxThreadsDim[2],
+//				deviceProps.maxGridSize[0],
+//				deviceProps.maxGridSize[1],
+//				deviceProps.maxGridSize[2],
+//				(int)deviceProps.totalConstMem,
+//				deviceProps.major,
+//				deviceProps.minor,
+//				(int)deviceProps.textureAlignment);
+//			break;
+//		}
+//	}
+//
+//	if (index == nDeviceCount)
+//	{
+//		LOGERR("Could not find any available CUDA device!");
+//		return false;
+//	}
 
 	return true;
 }
@@ -151,8 +144,7 @@ void CBlenderWrapper::getSingleInstance(COLOR_MODE mode)
 		{
 			if (CUDA_BLENDER == m_deviceType)
 			{
-				temp = new CCUDABlender(mode);
-				LOGINFO("CUDA instance address: %p", temp);
+				LOGINFO("CUDA is NOT available currently.");
 			}
 			else if (OPENCL_BLENDER == m_deviceType)
 			{
@@ -171,17 +163,12 @@ void CBlenderWrapper::getSingleInstance(COLOR_MODE mode)
 
 bool CBlenderWrapper::initializeDevice()
 {
-	bool ret = false;
-	CCUDABlender* cudaBlender = nullptr;
+	bool ret = false; 
 	COpenCLBlender* openclBlender = nullptr;
 	switch (m_deviceType)
 	{
 	case CBlenderWrapper::CUDA_BLENDER:
-		cudaBlender = dynamic_cast<CCUDABlender*>(m_blender.load(std::memory_order_relaxed));
-		if (cudaBlender)
-		{
-			ret = cudaBlender->initializeDevice();
-		}
+		return false;
 		
 		break;
 	case CBlenderWrapper::OPENCL_BLENDER:

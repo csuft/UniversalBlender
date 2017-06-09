@@ -17,6 +17,7 @@ set(SOURCE_FILES
 	utils/base64.h
 	utils/base64.cpp
 	utils/log.h
+	utils/log.cpp
 	utils/timer.h
 	utils/timer.cpp
 	utils/UnrollMap.h
@@ -33,7 +34,7 @@ endif(OpenCL_FOUND)
  
 ###################################################
 # dependency files 
-link_directories(lib/win/)
+link_directories(../lib/win/)
 set(UNROLLMAP_LIBS UnrollMap64.lib)
 
 ###################################################

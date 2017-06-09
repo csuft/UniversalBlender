@@ -1,7 +1,7 @@
 #ifndef BLENDER_WRAPPER_H
 #define BLENDER_WRAPPER_H
 
-#ifdef _WIN
+#ifdef _WINDOWS
 #define EXPORT_API __declspec(dllexport)
 #else
 #define EXPORT_API

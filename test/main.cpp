@@ -1,3 +1,4 @@
+
 #if defined(WIN32) || defined(WIN64) 
 #include <opencv2/opencv.hpp>
 #elif __APPLE__
@@ -7,7 +8,7 @@
 #include <iostream>
 #include <string>
 
-#include "../UniversalBlender/wrapper/BlenderWrapper.h"
+#include "../wrapper/BlenderWrapper.h"
 
 #define INPUT_WIDTH 4096
 #define INPUT_HEIGHT 2048

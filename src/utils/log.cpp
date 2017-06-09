@@ -8,7 +8,7 @@ CMyLog::CMyLog()
 	m_ulFileSize = 1024 * 1024 * 5;
 	m_ucLevel = LOG_LEVEL_INFO;
 
-#ifdef _WIN
+#ifdef _WINDOWS
 	m_hMutex = CreateMutex(NULL, false, NULL);
 	if (!m_hMutex)
 	{
@@ -18,7 +18,7 @@ CMyLog::CMyLog()
 	pthread_mutex_init(&m_mutex, NULL);
 #endif
 
-#ifdef _WIN
+#ifdef _WINDOWS
 	char* home = getenv("HOMEDRIVE");
 	assert(home != NULL);
 	m_path = std::string(home);
@@ -93,7 +93,7 @@ CMyLog::~CMyLog()
 		fclose(m_fp);
 	}
 
-#ifdef _WIN
+#ifdef _WINDOWS
 	CloseHandle(m_hMutex);
 #else
 	pthread_mutex_destroy(&m_mutex);
@@ -121,7 +121,7 @@ void CMyLog::Log(unsigned char level, const char* file, int line, const char* fm
 	{
 		return;
 	}
-#ifdef _WIN
+#ifdef _WINDOWS
 	WaitForSingleObject(m_hMutex, INFINITE);
 #else
 	pthread_mutex_lock(&m_mutex);
@@ -154,7 +154,7 @@ void CMyLog::Log(unsigned char level, const char* file, int line, const char* fm
 		ChangeLogFile();
 	}
 
-#ifdef _WIN
+#ifdef _WINDOWS
 	ReleaseMutex(m_hMutex);
 #else
 	pthread_mutex_unlock(&m_mutex);
@@ -169,7 +169,7 @@ void CMyLog::Log(unsigned char level, const char* str)
 		return;
 	}
 
-#ifdef _WIN
+#ifdef _WINDOWS
 	WaitForSingleObject(m_hMutex, INFINITE);
 #else
 	pthread_mutex_lock(&m_mutex);
@@ -194,7 +194,7 @@ void CMyLog::Log(unsigned char level, const char* str)
 		ChangeLogFile();
 	}
 
-#ifdef _WIN
+#ifdef _WINDOWS
 	ReleaseMutex(m_hMutex);
 #else
 	pthread_mutex_unlock(&m_mutex);

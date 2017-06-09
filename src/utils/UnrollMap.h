@@ -1,7 +1,7 @@
 ﻿#ifndef _UNROLLMAP_H_
 #define _UNROLLMAP_H_
 
-#ifdef _WIN
+#ifdef _WINDOWS
 #ifdef UNROLLMAP_EXPORTS
 #define UNROLLMAP_API __declspec(dllexport)
 #else

@@ -7,7 +7,9 @@ set(CMAKE_CXX_STANDARD 11)
 
 ###############################################
 # dependency files
-include_directories(../src/wrapper/)
+include_directories(../src/wrapper/) 
+link_directories(../lib/win/)
+set(UNROLLMAP_LIBS UnrollMap64.lib)
 
 ###############################################
 # Configure OpenCV.
