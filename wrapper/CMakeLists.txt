@@ -3,7 +3,7 @@ project(BlenderWrapper)
 
 set(CMAKE_CXX_STANDARD 11) 
 
-include_directories(../src/wrapper);
+include_directories(../src/wrapper)
 
 set(SOURCE_FILES
     Wrapper.cpp
@@ -12,4 +12,4 @@ set(SOURCE_FILES
 ####################################################
 # Output result
 add_library(${PROJECT_NAME} SHARED ${SOURCE_FILES})
-target_link_libraries(${PROJECT_NAME} Blender);
+target_link_libraries(${PROJECT_NAME} Blender)

@@ -3,8 +3,7 @@ project(Blender)
 
 ##################################################
 # Compiler and Linker options
-set(CMAKE_CXX_STANDARD 11) 
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules/");
+set(CMAKE_CXX_STANDARD 11)  
 
 ##################################################
 # Sources and Headers
@@ -26,20 +25,18 @@ set(SOURCE_FILES
 	
 ###################################################
 # OpenCL
-find_package(OpenCL REQUIRED);
+find_package(OpenCL REQUIRED)
 
 if(OpenCL_FOUND)
-	include_directories(${OpenCL_INCLUDE_DIRS});
-	link_directories(${OpenCL_LIBS});
-	set(OPENCL_LIBS ${OpenCL_LIBS});
+	include_directories(${OpenCL_INCLUDE_DIRS})
 endif(OpenCL_FOUND)
  
 ###################################################
 # dependency files 
-link_directories(lib/win/);
-set(UNROLLMAP_LIBS UnrollMap64.lib);
+link_directories(lib/win/)
+set(UNROLLMAP_LIBS UnrollMap64.lib)
 
 ###################################################
 # Output result
-add_library(${PROJECT_NAME} SHARED ${SOURCE_FILES});
-target_link_libraries(${PROJECT_NAME} ${UNROLLMAP_LIBS} ${OPENCL_LIBS});
+add_library(${PROJECT_NAME} SHARED ${SOURCE_FILES})
+target_link_libraries(${PROJECT_NAME} ${UNROLLMAP_LIBS} ${OpenCL_LIBRARIES})

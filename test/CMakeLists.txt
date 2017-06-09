@@ -7,14 +7,12 @@ set(CMAKE_CXX_STANDARD 11)
 
 ###############################################
 # dependency files
-include_directories(../src/wrapper/);
+include_directories(../src/wrapper/)
 
 ###############################################
-# For OpenCV header files
-include_directories(/path/to/OpenCV/include);
-# For OpenCV libs
-link_directories(/path/to/OpenCV/libs);
-set(OPENCV_LIBS opencv.libs);
+# Configure OpenCV.
+find_package(OpenCV REQUIRED)
+include_directories(${OpenCV_INCLUDE_DIRS})
 
 ###############################################
 set(SOURCE_FILES
@@ -22,5 +20,5 @@ set(SOURCE_FILES
 	
 ###############################################
 # Output result
-add_executable(${PROJECT_NAME} ${SOURCE_FILES});
-target_link_libraries(${PROJECT_NAME} ${OPENCV_LIBS} Blender);
+add_executable(${PROJECT_NAME} ${SOURCE_FILES})
+target_link_libraries(${PROJECT_NAME} ${OpenCV_LIBS} Blender)
