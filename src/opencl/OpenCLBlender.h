@@ -19,10 +19,10 @@ public:
 	~COpenCLBlender();
 
 	bool initializeDevice();
-	virtual void setupBlender();
-	virtual void runBlender(unsigned char* input_data, unsigned char* output_data);
-	virtual void destroyBlender();
-	virtual bool setParams(const unsigned int iw, const unsigned int ih, const unsigned int ow, const unsigned int oh, std::string offset, int type);
+	virtual void setupBlender() override;
+	virtual void runBlender(unsigned char* input_data, unsigned char* output_data) override;
+	virtual void destroyBlender() override;
+	virtual bool setParams(const unsigned int iw, const unsigned int ih, const unsigned int ow, const unsigned int oh, std::string offset, int type) override;
 
 	//private data member
 private:

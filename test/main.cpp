@@ -100,13 +100,13 @@ void testCUDA()
 
 void testOpenCL()
 {
-	//std::string offset = "2_748.791_759.200_758.990_0.000_0.000_90.000_742.211_2266.919_750.350_-0.300_0.100_90.030_3040_1520_1026";
-	std::string offset = "2_710_718_716_0_0_0_712_2162_724_0_0_180_2880_1440_772";
-	cv::Mat inputImage = cv::imread("3.jpg"); 
+	std::string offset = "2_727.392_763.239_757.680_0.000_0.000_90.000_733.972_2283.844_767.699_0.450_-1.000_90.800_3040_1520_1026";
+	//std::string offset = "2_710_718_716_0_0_0_712_2162_724_0_0_180_2880_1440_772";
+	cv::Mat inputImage = cv::imread("F:/project/UniversalBlender/test/test.insp"); 
 	cv::Mat outputImage(OUTPUT_HEIGHT, OUTPUT_WIDTH, CV_8UC3);
 
 	BlenderParams params;
-    printf("input width: %d, input height: %d", inputImage.cols, inputImage.rows);
+    printf("input width: %d, input height: %d\n", inputImage.cols, inputImage.rows);
 	params.input_width = inputImage.cols;
 	params.input_height = inputImage.rows;
 	params.output_width = OUTPUT_WIDTH;
@@ -125,7 +125,7 @@ void testOpenCL()
 	wrapper->initializeDevice();
 	wrapper->runImageBlender(params, CBlenderWrapper::PANORAMIC_BLENDER);
 	 
-	cv::imwrite("BlenderResult_OpenCL.jpg", outputImage);
+	cv::imwrite("F:/BlenderResult_OpenCL.jpg", outputImage);
 
 	delete wrapper; 
 }

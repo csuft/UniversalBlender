@@ -12,7 +12,6 @@ m_inputParamsBuffer(nullptr), m_leftMapBuffer(nullptr), m_rightMapBuffer(nullptr
 {
 	memset(m_origins, 0, sizeof(int)* 3);
 	memset(m_inputParams, 0, sizeof(int)* 16);
-	m_unrollMap = new UnrollMap;
 	m_colorMode = mode;
 	m_channels = 4;
 }
@@ -245,7 +244,7 @@ void COpenCLBlender::setupBlender()
 	}
 }
 
-bool COpenCLBlender::setParams(const unsigned int iw, const unsigned int ih, const unsigned int ow, const unsigned oh, std::string offset, int type)
+bool COpenCLBlender::setParams(const unsigned int iw, const unsigned int ih, const unsigned int ow, const unsigned int oh, std::string offset, int type)
 {
 	if (iw <= 0 || ih <= 0 || ow <= 0 || oh <= 0)
 	{
