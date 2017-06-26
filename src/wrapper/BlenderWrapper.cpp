@@ -6,12 +6,8 @@
 #include "../opencl/OpenCLBlender.h"
 #include "../cpu/CPUBlender.h"
 
-#include <cuda_runtime.h>
-#include <cuda_runtime_api.h>
-#include <cuda.h>
-
 #ifdef __APPLE__
-#include <OpenCL/cl.hpp>
+#include "../../mac/cl.hpp"
 #include <OpenCL/cl_gl.h>
 #else 
 #include <CL/cl.hpp>

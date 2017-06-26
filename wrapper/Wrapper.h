@@ -1,5 +1,7 @@
-#ifndef C_WRAPPER_H__  
-#define C_WRAPPER_H_  
+#ifndef C_WRAPPER_H__
+#define C_WRAPPER_H__  
+
+#ifdef _WINDOWS
 
 #define EXPORTS_API _declspec( dllexport )
 
@@ -13,6 +15,8 @@ extern "C" {
 #ifdef __cplusplus  
 };
 #endif  
+
+#endif
 
 #endif
 

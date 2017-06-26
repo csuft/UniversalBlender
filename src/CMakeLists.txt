@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.6)
-project(Blender)
+project(Blender C CXX)
 
 ##################################################
 # Compiler and Linker options
@@ -34,8 +34,13 @@ endif(OpenCL_FOUND)
  
 ###################################################
 # dependency files 
+if (WIN32)
 link_directories(../lib/win/)
 set(UNROLLMAP_LIBS UnrollMap64.lib)
+elseif (APPLE)
+link_directories(../lib/mac/)
+set(UNROLLMAP_LIBS libunrollmap.dylib)
+endif(WIN32)
 
 ###################################################
 # Output result

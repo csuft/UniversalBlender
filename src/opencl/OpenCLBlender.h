@@ -4,7 +4,7 @@
 #include "../base/BaseBlender.h"
 
 #ifdef __APPLE__
-#include <OpenCL/cl.hpp>
+#include "../../mac/cl.hpp"
 #include <OpenCL/cl_gl.h> 
 #else  
 #include <CL/cl.hpp>

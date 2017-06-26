@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.6)
-project(BlenderTest)
+project(BlenderTest C CXX)
 
 ###############################################
 # Compiler and Linker options
@@ -8,8 +8,13 @@ set(CMAKE_CXX_STANDARD 11)
 ###############################################
 # dependency files
 include_directories(../src/wrapper/) 
+if (WIN32)
 link_directories(../lib/win/)
 set(UNROLLMAP_LIBS UnrollMap64.lib)
+elseif (APPLE)
+link_directories(../lib/mac/)
+set(UNROLLMAP_LIBS libunrollmap.dylib)
+endif(WIN32)
 
 ###############################################
 # Configure OpenCV.
