@@ -14,7 +14,7 @@ link_directories(../lib/mac/)
 elseif (WIN32)
 link_directories(../lib/win/)
 endif (APPLE)
-
+ 
 ####################################################
 # Output result
 add_library(${PROJECT_NAME} SHARED ${SOURCE_FILES})
