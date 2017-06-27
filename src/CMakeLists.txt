@@ -3,8 +3,8 @@ project(Blender C CXX)
 
 ##################################################
 # Compiler and Linker options
-set(CMAKE_CXX_STANDARD 11)  
-
+set(CMAKE_CXX_STANDARD 11)
+add_definitions(-DCL_USE_DEPRECATED_OPENCL_1_1_APIS)
 ##################################################
 # Sources and Headers
 set(SOURCE_FILES
@@ -23,7 +23,7 @@ set(SOURCE_FILES
 	utils/UnrollMap.h
 	wrapper/BlenderWrapper.h
 	wrapper/BlenderWrapper.cpp)
-	
+
 ###################################################
 # OpenCL
 find_package(OpenCL REQUIRED)
@@ -31,9 +31,9 @@ find_package(OpenCL REQUIRED)
 if(OpenCL_FOUND)
 	include_directories(${OpenCL_INCLUDE_DIRS})
 endif(OpenCL_FOUND)
- 
+
 ###################################################
-# dependency files 
+# dependency files
 if (WIN32)
 link_directories(../lib/win/)
 set(UNROLLMAP_LIBS UnrollMap64.lib)
